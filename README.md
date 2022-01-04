@@ -13,7 +13,7 @@
 To classify face to label 0~4 (0: 'white', 1: 'black', 2: 'asian', 3: 'indian', 4: 'others') by [UTKFace](https://susanqq.github.io/UTKFace/) Dataset.
 This time, the model is EfficientNet-V2 with ArcFace.
 
-
+<img src="https://user-images.githubusercontent.com/48679574/147999774-478d64d8-0961-499e-bb8e-a6d7740acf32.png" width="400px">
 
 
 # Result
@@ -71,7 +71,7 @@ ONNX Inference Latency is 192.74330139160156 [ms]
 - category cross entropy
 - image padding resize
 
-<img src="https://user-images.githubusercontent.com/48679574/145761032-264e07fc-a5c5-4048-87ce-41c52dc97a74.png" width="400px">
+<img src="https://user-images.githubusercontent.com/48679574/147999782-4e9e84cc-09f1-4a15-994b-1a2cb1f8e8b1.jpeg" width="400px">
 
 
 # References
