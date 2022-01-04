@@ -11,6 +11,7 @@
 
 # Abstract
 To classify face to label 0~4 (0: 'white', 1: 'black', 2: 'asian', 3: 'indian', 4: 'others') by [UTKFace](https://susanqq.github.io/UTKFace/) Dataset.
+
 This time, the model is EfficientNet-V2 with ArcFace.
 
 <img src="https://user-images.githubusercontent.com/48679574/147999774-478d64d8-0961-499e-bb8e-a6d7740acf32.png" width="600px">
