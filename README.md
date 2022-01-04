@@ -31,7 +31,7 @@ When prediction, to search similar image from other 50 images
 
 <b>When ArcFace prediction from hold_vector</b>
 ```python
-# test.py
+# get most similar top N images from hold vector
 similarity = cosine_similarity(xq, hold_vector)
 label_candidate = [vector_label[idx] for idx in np.argsort(similarity[0])[::-1][:20]]
 frequent_idx = np.argmax(np.bincount(label_candidate))
