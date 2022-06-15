@@ -41,11 +41,19 @@ class Trainer():
         x = archs.ArcFace(self.cfg.classes, 30, 0.05)([x, y1])
         outputs = layers.Activation('softmax')(x)
 
+        # color meta
         cx = layers.GlobalMaxPooling2D()(origin)
         cx = layers.BatchNormalization()(cx)
         cx = layers.Dense(11, activation=None)(cx)
         color_logits = layers.Activation('softmax')(cx)
-        model = Model(inputs=[inputs, y1], outputs=[outputs, color_logits])
+
+        # shape meta
+        sx = layers.GlobalMaxPooling2D()(origin)
+        sx = layers.BatchNormalization()(sx)
+        sx = layers.Dense(2, activation=None)(sx)
+        shape_logits = layers.Activation('softmax')(sx)
+
+        model = Model(inputs=[inputs, y1], outputs=[outputs, color_logits, shape_logits])
         model.compile(optimizer=self.opt, loss='categorical_crossentropy',
                       metrics=['accuracy'])
         ##if weights:
@@ -67,8 +75,12 @@ class Trainer():
         # color meta (cls==11)
         x_color, color_label, val_color, vcolor_label = np.array(x_color), np.array(color_label), np.array(val_color), np.array(vcolor_label) 
         color_label, vcolor_label = to_categorical(color_label), to_categorical(vcolor_label)
-        #print(x_color.max(), x_color.min(), val_color.max(), val_color.max())
-        #print(x_color.shape, val_color.shape, color_label.shape, vcolor_label.shape)
+
+        # shape meta (cls==2)
+        x_shapes, val_shapes, shape_label, vshape_label = np.array(x_shapes), np.array(val_shapes), np.array(shape_label), np.array(vshape_label) 
+        shape_label, vshape_label = to_categorical(shape_label), to_categorical(vshape_label)
+
+
         calllbacks_ = self.loader.create_callbacks() 
         model = self.load_model(weight_path)
        
@@ -76,10 +88,10 @@ class Trainer():
  
         startTime1 = datetime.now()
         hist1 = model.fit(x=[X, y_labels] ,
-                y=[y_labels,color_label],
+                y=[y_labels,color_label, shape_label],
                 batch_size=self.cfg.train_batch, 
                 epochs=self.cfg.epochs, 
-                validation_data=([X_val,y_val], [y_val, vcolor_label]), 
+                validation_data=([X_val,y_val], [y_val, vcolor_label, vshape_label]), 
                 verbose=1, 
                 callbacks=calllbacks_)
 
@@ -121,9 +133,3 @@ if __name__=='__main__':
     
     #arcface_ = ArcFace(train_path, val_path, num_race=RACE_NUM_CLS)
     #arcface_.output_embedding(weights=weight_path)
-
-
-
-
-
-
