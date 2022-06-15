@@ -12,7 +12,7 @@ from DataLoder import DataLoad
 from cfg import Cfg
 #from tensorflow.keras.applications.efficientnet import EfficientNetB1
 from keras_efficientnet_v2.efficientnet_v1 import EfficientNetV1B2
-#from layers.tf_lambda_network import LambdaLayer
+from layers.tf_lambda_network import LambdaLayer
 from metrics import archs, pca
 
 class Trainer():
@@ -28,21 +28,24 @@ class Trainer():
         color_ = (HEIGHT, WIDTH, 11)
         shape_ = (HEIGHT, WIDTH, 2)
         y1 = layers.Input(shape=(self.cfg.classes,))
-        yc = layers.Input(shape = [11])
+        yc = layers.Input(shape = (11,))
         ys = layers.Input(shape=(2,))
         
         model = EfficientNetV1B2(pretrained="imagenet") #(include_top=True, weights='imagenet')
         #model.summary()
         inputs = model.get_layer(index=0).input
-        x = model.get_layer(index=-4).output
-        print(inputs, x)
+        origin = model.get_layer(index=-4).output
         #x = LambdaLayer(dim_k=320, r=3, heads=4, dim_out=1280)(x)
-        x = layers.GlobalMaxPooling2D()(x)
+        x = layers.GlobalMaxPooling2D()(origin)
         x = layers.BatchNormalization()(x)
         x = archs.ArcFace(self.cfg.classes, 30, 0.05)([x, y1])
-        print(x, "x")
         outputs = layers.Activation('softmax')(x)
-        model = Model(inputs=[inputs, y1], outputs=outputs)
+
+        cx = layers.GlobalMaxPooling2D()(origin)
+        cx = layers.BatchNormalization()(cx)
+        cx = layers.Dense(11, activation=None)(cx)
+        color_logits = layers.Activation('softmax')(cx)
+        model = Model(inputs=[inputs, y1], outputs=[outputs, color_logits])
         model.compile(optimizer=self.opt, loss='categorical_crossentropy',
                       metrics=['accuracy'])
         ##if weights:
@@ -55,14 +58,15 @@ class Trainer():
         print('train data loading.....')
         X, x_color, x_shapes, y_labels, color_label, shape_label = self.loader.load_data(valid=False)
         X_val, val_color, val_shapes, y_val, vcolor_label, vshape_label = self.loader.load_data(valid=True)
+        
         # input image (cls==128) 
         X, X_val, y_labels, y_val = np.array(X), np.array(X_val), np.array(y_labels), np.array(y_val)
         y_labels, y_val = to_categorical(y_labels), to_categorical(y_val)
         print(X.max(), X.min(), y_labels.max(), y_val.max())
         print(X.shape, X_val.shape, y_labels.shape, y_val.shape)
-        # color
-        #x_color, color_label, val_color, vcolor_label = np.array(x_color), np.array(color_label), np.array(val_color), np.array(vcolor_label) 
-        #color_label, vcolor_label = to_categorical(color_label), to_categorical(vcolor_label)
+        # color meta (cls==11)
+        x_color, color_label, val_color, vcolor_label = np.array(x_color), np.array(color_label), np.array(val_color), np.array(vcolor_label) 
+        color_label, vcolor_label = to_categorical(color_label), to_categorical(vcolor_label)
         #print(x_color.max(), x_color.min(), val_color.max(), val_color.max())
         #print(x_color.shape, val_color.shape, color_label.shape, vcolor_label.shape)
         calllbacks_ = self.loader.create_callbacks() 
@@ -71,9 +75,11 @@ class Trainer():
 
  
         startTime1 = datetime.now()
-        hist1 = model.fit(x=X,y=y_labels, batch_size=self.cfg.train_batch, 
+        hist1 = model.fit(x=[X, y_labels] ,
+                y=[y_labels,color_label],
+                batch_size=self.cfg.train_batch, 
                 epochs=self.cfg.epochs, 
-                validation_data=(X_val, y_val), 
+                validation_data=([X_val,y_val], [y_val, vcolor_label]), 
                 verbose=1, 
                 callbacks=calllbacks_)
 
