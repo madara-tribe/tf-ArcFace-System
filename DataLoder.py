@@ -36,10 +36,12 @@ class DataLoad:
     def preprocess(self, p, clannel):
         if clannel==3:
             x = cv2.imread(p)
+            x = cv2.resize(x, (self.width, self.height), interpolation=cv2.INTER_NEAREST)
             x = x.reshape(self.width, self.height, 3).astype(np.float32)
             #x_img = cv2.cvtColor(x_img, cv2.COLOR_BGR2RGB)
         elif clannel==1:
             x = cv2.imread(p, 0)
+            x = cv2.resize(x, (self.width, self.height), interpolation=cv2.INTER_NEAREST)
             x = x.reshape(self.width, self.height, 1).astype(np.float32)
         return x/255
 
@@ -48,9 +50,13 @@ class DataLoad:
         x_imgs = os.listdir(x1_dir)
         x_imgs.sort()
         
-        x_color, x_shape = np.load(self.cfg.x2), np.load(self.cfg.x3)
+        color_meta, shape_meta= [], []
         x_label, c_label, s_label = np.load(self.cfg.x_label), np.load(self.cfg.y1), np.load(self.cfg.y2)
-        X, x_colors, x_shapes, y_img, color_label, shape_label = [], [], [], [], [], []
+        X, x_colors, x_shapes, y_labels, color_label, shape_label = [], [], [], [], [], []
+        for _ in range(len(x_imgs)):
+            color_meta.append(np.load(self.cfg.x2))
+        for _ in range(len(x_imgs)):
+            shape_meta.append(np.load(self.cfg.x3))
         for i, image_path in enumerate(tqdm(x_imgs)):
             img = self.preprocess(os.path.join(x1_dir, image_path), 3)
             if valid:
@@ -58,11 +64,11 @@ class DataLoad:
             # x_img
             X.append(img)
             # x2, x3
-            x_colors.append(np.copy(x_color))
-            x_shapes.append(np.copy(x_shape))
-            # y1, y2
-            y_img.append(x_label[i])
+            x_colors.append(color_meta[i])
+            x_shapes.append(shape_meta[i])
+            # x_label, y1, y2
+            y_labels.append(x_label[i])
             color_label.append(c_label[i])
             shape_label.append(s_label[i])
-        return X, x_color, x_shapes, y_img, color_label, shape_label
+        return X, x_colors, x_shapes, y_labels, color_label, shape_label
 
