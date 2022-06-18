@@ -7,6 +7,7 @@ from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras import backend as K
 from DataLoder import DataLoad
 from cfg import Cfg
 from keras_efficientnet_v2.efficientnet_v2 import EfficientNetV2B2
@@ -27,12 +28,15 @@ class Trainer():
         inputs = model.get_layer(index=0).input
         x = model.get_layer(index=-4).output
         x = LambdaLayer(dim_k=320, r=3, heads=4, dim_out=1280)(x)
-        x = GlobalAveragePooling2D()(x)
+        x = MaxPool2D(pool_size=(2,2), strides=(2,2))(x)
+        x = Flatten()(x)
+        x = Dense(self.cfg.classes, activation = 'linear')(x)
+        x = Lambda(lambda x: K.l2_normalize(x,axis=1))(x)
         x = archs.ArcFace(self.cfg.classes, 30, 0.05)([x, y])
-        outputs = Activation("softmax")(x)
+        outputs = Activation('softmax')(x)
         model = Model(inputs=[inputs,y], outputs=outputs)
         model.compile(optimizer=self.opt, 
-                      loss = "categorical_crossentropy",
+                      loss = tf.keras.losses.SparseCategoricalCrossentropy(),
                       metrics=['accuracy'])
         if weights:
             print('weight loding ......')
@@ -47,9 +51,10 @@ class Trainer():
         X_val, y_val = X_val[200:400], y_val[200:400]
         # input image (cls==128) 
         X_, X_val = np.array(X+X_aug), np.array(X_val)
-        y_labels_, y_val = to_categorical(y_labels+y_labels, num_classes=self.cfg.classes, dtype='uint8'), to_categorical(y_val, num_classes=self.cfg.classes, dtype='uint8')
-        print(X_.shape, X_val.shape, y_labels_.shape, y_val.shape)
-        print(X_.max(), X_.min()) 
+        y_labels_, y_val = np.array(y_labels+y_labels), np.array(y_val)
+        #y_labels_, y_val = to_categorical(y_labels+y_labels, num_classes=self.cfg.classes, dtype='uint8'), to_categorical(y_val, num_classes=self.cfg.classes, dtype='uint8')
+        #print(X_.shape, X_val.shape, y_labels_.shape, y_val.shape)
+        #print(X_.max(), X_.min()) 
         print('model loading.....')
         calllbacks_ = self.loader.create_callbacks() 
         model = self.load_model(weight_path)
@@ -75,4 +80,5 @@ if __name__=='__main__':
     os.makedirs(cfg.WEIGHT_DIR, exist_ok=True)
     arcface = Trainer(cfg)
     arcface.train(weight_path=weight_path)
+
 
