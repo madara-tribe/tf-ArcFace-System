@@ -5,13 +5,10 @@ import cv2
 from datetime import datetime
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD, Adam
-from tensorflow.keras.layers import *
-from tensorflow.keras.models import Model
 from tensorflow.keras.utils import to_categorical
 from DataLoder import DataLoad
 from cfg import Cfg
 from layers.resnet import create_model
-from layers.tf_lambda_network import LambdaLayer
 from metrics import archs
 
 
@@ -25,7 +22,7 @@ class Trainer():
         self.opt = Adam(lr=config.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
 
     def load_model(self, weights):
-        model = create_model(input_shape=(HEIGHT, WIDTH,3),k=1, lr=1e-3)
+        model = create_model(HEIGHT, WIDTH, k=1, lr=1e-3)
         model.compile(optimizer=self.opt, 
                       loss = {"color_logits": "categorical_crossentropy",
                               "shape_logits": "binary_crossentropy"},
@@ -38,18 +35,17 @@ class Trainer():
         
     def train(self, weight_path=None):
         print('train data loading.....')
-        X, X_aug, x_colors, x_shapes, color_label, shape_label = self.loader.meta_load(valid=False)
-        X_val, _, val_colors, val_shapes, vc_label, vs_label = self.loader.meta_load(valid=True)
+        X, X_aug, color_label, shape_label = self.loader.meta_load(valid=False)
+        X_val, _, vc_label, vs_label = self.loader.meta_load(valid=True)
+        X_val, vc_label, vs_label = X_val[200:400], vc_label[200:400], vs_label[200:400]
         # input image (cls==128) 
         X, X_val = np.array(X+X_aug), np.array(X_val)
         
         # color meta (cls==11)
-        x_colors, val_colors = np.array(x_colors + x_colors), np.array(val_colors)
-        color_label, vc_label = to_categorical(color_label+color_label), to_categorical(vc_label)
+        color_label, vc_label = to_categorical(color_label+color_label, num_classes=11, dtype='uint8'), to_categorical(vc_label, num_classes=11, dtype='uint8')
         # shape meta (cls==2)
-        x_shapes, val_shapes = np.array(x_shapes+x_shapes), np.array(val_shapes)
-        shape_label, vs_label = to_categorical(shape_label+shape_label), to_categorical(vs_label)
-
+        shape_label, vs_label = to_categorical(shape_label+shape_label,num_classes=2, dtype='uint8'), to_categorical(vs_label, num_classes=2, dtype='uint8')
+        print(X.shape, X_val.shape, color_label.shape, shape_label.shape, X.min(), X.max(), vc_label.shape, vs_label.shape)
         print('model loading.....')
         calllbacks_ = self.loader.create_callbacks() 
         model = self.load_model(weight_path)

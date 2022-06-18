@@ -81,30 +81,20 @@ class DataLoad:
         x_imgs.sort()
         
         c_label, s_label = np.load(self.cfg.y1), np.load(self.cfg.y2)
-        X, X_aug, x_colors, x_shapes = [], [], [], []
-        color_label, shape_label = [], []
-        color_meta = [np.load(self.cfg.x2) for _ in range(len(x_imgs))]
-        shape_meta = [np.load(self.cfg.x3) for _ in range(len(x_imgs))]
-
+        X, X_aug, color_label, shape_label = [], [], [], []
+                                    
         for i, image_path in enumerate(tqdm(x_imgs)):
             if valid:
                 img = self.preprocess(os.path.join(x1_dir, image_path), 3)
-                x_colors.append(color_meta[i])
-                x_shapes.append(shape_meta[i])
-                # x_label, y1, y2
-                color_label.append(c_label[i])
-                shape_label.append(s_label[i])
             else:
                 img = self.preprocess(os.path.join(x1_dir, image_path), 3)
                 aug_img = np.flip(img)
                 X_aug.append(aug_img)
             # img
             X.append(img)
-            x_colors.append(color_meta[i])
-            x_shapes.append(shape_meta[i])
             # x_label, y1, y2
             color_label.append(c_label[i])
             shape_label.append(s_label[i])
-        return X, X_aug, x_colors, x_shapes, color_label, shape_label
+        return X, X_aug, color_label, shape_label
 
 
