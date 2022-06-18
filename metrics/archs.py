@@ -16,9 +16,13 @@ class ArcFace(Layer):
         super(ArcFace, self).__init__()
     
     def get_config(self):
+        config = {
+            "n_classes" : self.n_classes,
+            "s" : self.s,
+            "m" : self.m
+        }
         base_config = super().get_config()
-        return base_config
-        #return dict(list(base_config.items()) + list(config.items()))
+        return dict(list(base_config.items()) + list(config.items()))
 
     def build(self, input_shape):
         # Create a trainable weight variable for this layer.
@@ -34,6 +38,7 @@ class ArcFace(Layer):
         y = x[1]
         x_normalize = tf.math.l2_normalize(x[0]) # x = x'/ ||x'||2
         k_normalize = tf.math.l2_normalize(self.kernel) # Wj = Wj' / ||Wj'||2
+
         cos_m = K.cos(self.m)
         sin_m = K.sin(self.m)
         th = K.cos(np.pi - self.m)
@@ -59,4 +64,3 @@ class ArcFace(Layer):
     def compute_output_shape(self, input_shape):
 
         return (input_shape[0][0], self.n_classes)
-
