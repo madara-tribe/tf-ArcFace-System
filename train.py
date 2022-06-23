@@ -12,7 +12,7 @@ from DataLoder import DataLoad
 from cfg import Cfg
 from keras_efficientnet_v2.efficientnet_v2 import EfficientNetV2B2
 from layers.tf_lambda_network import LambdaLayer
-from metrics import archs
+from metrics import archs, losses
 
 
 class Trainer():
@@ -21,22 +21,22 @@ class Trainer():
         self.loader = DataLoad(config)
         #self.opt = SGD(learning_rate=config.lr, decay=5e-4)
         self.opt = Adam(lr=config.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+        self.loss_fn = losses.SoftmaxLoss()
 
     def load_model(self, weights):
+        lambda_head = 4
         y = Input(shape=(self.cfg.classes,))
         model = EfficientNetV2B2(pretrained=None) #(include_top=True, weights='imagenet')
         inputs = model.get_layer(index=0).input
         x = model.get_layer(index=-4).output
-        x = LambdaLayer(dim_k=320, r=3, heads=4, dim_out=1280)(x)
-        x = MaxPool2D(pool_size=(2,2), strides=(2,2))(x)
-        x = Flatten()(x)
-        x = Dense(self.cfg.classes, activation = 'linear')(x)
-        x = Lambda(lambda x: K.l2_normalize(x,axis=1))(x)
-        x = archs.ArcFace(self.cfg.classes, 30, 0.05)([x, y])
-        outputs = Activation('softmax')(x)
+        b, h, g, c =x.shape
+        x = LambdaLayer(dim_k=c/lambda_head, r=3, heads=lambda_head, dim_out=c)(x)
+        x = GlobalAveragePooling2D()(x)
+        outputs = archs.ArcFace(self.cfg.classes, 30, 0.05)([x, y])
+        #outputs = Activation('softmax')(x)
         model = Model(inputs=[inputs,y], outputs=outputs)
         model.compile(optimizer=self.opt, 
-                      loss = tf.keras.losses.SparseCategoricalCrossentropy(),
+                      loss = self.loss_fn, #tf.keras.losses.SparseCategoricalCrossentropy(),
                       metrics=['accuracy'])
         if weights:
             print('weight loding ......')
