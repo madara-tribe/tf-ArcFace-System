@@ -10,4 +10,3 @@ def cosine_similarity(q, h):
     h_norm = np.linalg.norm(h, axis=1)
     cosine_sim = np.dot(q, h.T)/(q_norm*h_norm+1e-10)
     return cosine_sim
-

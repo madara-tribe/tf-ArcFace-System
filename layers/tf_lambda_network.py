@@ -62,6 +62,10 @@ class LambdaLayer(Layer):
                                                trainable=True)
             self.rel_pos = calc_rel_pos(n)
 
+    def get_config(self):
+        base_config = super().get_config()
+        return base_config
+
     def call(self, x, **kwargs):
         """
         x : (1, 8, 8, 1280)
@@ -78,10 +82,14 @@ class LambdaLayer(Layer):
 
         q = self.norm_q(q)
         v = self.norm_v(v)
-        print(q.shape, k.shape, v.shape)
-        q = Rearrange('b hh ww (h k) -> b h k (hh ww)', h=h)(q) # (1, 4, 320, 64)  
-        k = Rearrange('b hh ww (u k) -> b u k (hh ww)', u=u)(k) # (1, 1, 320, 64)
-        v = Rearrange('b hh ww (u v) -> b u v (hh ww)', u=u)(v) # (1, 1, 320, 64)
+        print(q.shape, k.shape, v.shape, b, hh, ww, c, self.dim_v)
+        q = tf.reshape(q, (-1, h, self.dim_v, hh*ww))
+        k = tf.reshape(k, (-1, u, self.dim_v, hh*ww))
+        v = tf.reshape(v, (-1, u, self.dim_v, hh*ww))
+        print(q.shape)
+        #q = Rearrange('b hh ww (h k) -> b h k (hh ww)', h=h)(q) # (1, 4, 320, 64) 
+        #k = Rearrange('b hh ww (u k) -> b u k (hh ww)', u=u)(k) # (1, 1, 320, 64)
+        #v = Rearrange('b hh ww (u v) -> b u v (hh ww)', u=u)(v) # (1, 1, 320, 64)
 
         k = nn.softmax(k)
         print(q.shape, k.shape, v.shape)
@@ -109,11 +117,4 @@ class LambdaLayer(Layer):
     def compute_output_shape(self, input_shape):
         return (*input_shape[:2], self.out_dim)
 
-    def get_config(self):
-        config = {'output_dim': (*self.input_shape[:2], self.out_dim)}
-        base_config = super(LambdaLayer, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
-    
-if __name__=="__name__":
-    x = tf.random.normal(shape=(1, 8, 8, 1280))
-    out = LambdaLayer(dim_k=320, r=3, heads = 4, dim_out = 1280)(x)
+

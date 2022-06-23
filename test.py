@@ -1,79 +1,85 @@
-import os, cv2
-import glob, time
-from pathlib import Path
+import os, sys
+import time
 import numpy as np
+from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
-from UTKload import UTKLoad, WEIGHT_DIR, WIDTH, HEIGHT, RACE_NUM_CLS
-from train import ArcFace
-from metrics.cosin_metric import cosine_similarity
+from DataLoder import DataLoad
+from cfg import Cfg
+from keras_efficientnet_v2.efficientnet_v2 import EfficientNetV2B2
+from layers.tf_lambda_network import LambdaLayer
+from metrics import archs
+from metrics.cosin_metric import cosin_metric, cosine_similarity
 
+path = "../center/holdv"
 
+N = -4
+class Tester:
+    def __init__(self, config):
+        self.loader = DataLoad(config)
+        self.cfg = config
 
-def load_embeding_model(weight):
-    arcface_ = ArcFace(train_path=None, val_path=None, num_race=RACE_NUM_CLS)
-    m = arcface_.load_arcface_model(weight)
-    embeding_model = Model(m.get_layer(index=0).input, m.get_layer(index=-5).output)
-    embeding_model.summary()
-    return embeding_model
-    
-def load_querys(model, test_path):
-    load_ = UTKLoad(gamma=2.0)
-    X_test, y_test = load_.load_data(path=test_path, img_size=HEIGHT)
-    X_test = np.array(X_test, dtype='float32')/255
-    Xs = model.predict(X_test, verbose=1)
-    return Xs, y_test
-  
-def get_hold_vector(model, path):
-    image_dir = Path(path)
-    X_test, vector_label = [], []
-    for i, image_path in enumerate(image_dir.glob("*.jpg")):
-        image_name = image_path.name
-        y_label = image_name.split("_")[0]
-        img = cv2.imread(str(image_path))
-        vector_label.append(y_label)
-        X_test.append(img)
-    #load_ = UTKLoad(gamma=2.0)
-    #hold_vector, vector_label = load_.load_data(path=path, img_size=HEIGHT)
-    hold_vector = np.array(X_test, dtype='float32')/255
-    hold_vector = model.predict(hold_vector, verbose=1)
-    return hold_vector, vector_label
-    
-    
-
-def test_performance(model, query_path, vector_path):
-    X_querys, y_test = load_querys(model, query_path)
-    #X_querys = ss.fit_transform(X_querys)
-    X_querys /=np.linalg.norm(X_querys, axis=1, keepdims=True)
-    
-    hold_vector, vector_label = get_hold_vector(model, vector_path)
-    #hold_vector = ss.fit_transform(hold_vector)
-    hold_vector /=np.linalg.norm(hold_vector, axis=1, keepdims=True)
-    
-    acc = 0
-    start = time.time()
-    for i, (xq, y_label) in enumerate(zip(X_querys, y_test)):
-        if len(hold_vector) > RACE_NUM_CLS:
-            similarity = cosine_similarity(xq, hold_vector)
-            label_candidate = [vector_label[idx] for idx in np.argsort(similarity[0])[::-1][:20]]
-            frequent_idx = np.argmax(np.bincount(label_candidate))
-        else:
-            frequent_idx = np.argmax(cosine_similarity(xq, hold_vector))
+    def load_arcface_model(self, weights):
+        num_cls = self.cfg.classes
+        y = Input(shape=(num_cls,))
+        model = EfficientNetV2B2(pretrained=None) #(include_top=True, weights='imagenet')
+        inputs = model.get_layer(index=0).input
+        x = model.get_layer(index=-4).output
+        x = LambdaLayer(dim_k=320, r=3, heads=4, dim_out=1280)(x)
+        x = GlobalAveragePooling2D()(x)
+        #x = Dense(self.cfg.classes, activation = 'linear')(x)
+        #x = Lambda(lambda x: K.l2_normalize(x,axis=1))(x)
+        x = archs.ArcFace(num_cls, 30, 0.05)([x, y])
+        outputs = Activation('softmax')(x)
+        models = Model(inputs=[inputs,y], outputs=outputs)
+        models.load_weights(weights)
         
-        if y_label==int(frequent_idx):
+        # arcface model
+        embed_inputs = models.get_layer(index=0).input
+        embed_out = models.get_layer(index=N).output
+        arcface_model = Model(inputs=embed_inputs, outputs=embed_out)
+        arcface_model.summary()
+        return arcface_model
+    
+    def load_querys(self):
+        #X_data, y_data, _ = self.loader.img_load(valid=None)
+        X_data, y_data, _, _ = self.loader.load_hold_vector(path)
+        X_data = np.array(X_data)
+        X_query, y_query, _ = self.loader.img_load(valid=True)
+        X_query, y_query = X_query[600], y_query[600]
+        if len(X_query.shape)==3:
+            X_query = np.expand_dims(X_query, 0)
+        return X_data, y_data, X_query, y_query
+        
+        
+
+    def test(self, weight_path):
+        X_data, y_data, X_query, y_query = self.load_querys()
+        model = self.load_arcface_model(weight_path)
+        # prpare
+        X_data = model.predict(X_data, verbose=1)
+
+        acc = 0
+        start = time.time()
+        X_query = model.predict(X_query, verbose=1)
+        print(X_data.shape, X_query.shape)
+        cos_sims = [cosin_metric(X_query, d) for d in X_data]
+        np.save("cossim600", cos_sims)
+        max_idx = np.argmax(cos_sims)
+        pred_idx = y_data[max_idx]
+        print(max_idx, pred_idx, y_query)
+        if pred_idx==y_query:
             acc += 1
         else:
             acc += 0
-    print("TF Model Inference Latency is", time.time() - start, "[s]")
-    print('accuracy is {}'.format(acc/len(X_querys)))
-        
+        print("TF Model Inference Latency is", time.time() - start, "[s]")
+        print('accuracy is {}'.format(acc/len(X_query)*100))
 
 
 if __name__=='__main__':
-    weight = 'ep40arcface_model_260x260.hdf5'
-    query_path = '../../UTK/UTKFace'
-    vector_path = 'hold_vector'
-    embeding_model = load_embeding_model(weight)
-    test_performance(embeding_model, query_path, vector_path)
-
+    cfg = Cfg
+    weight_path = "weights/arcface_model_29.hdf5"
+    os.makedirs(cfg.WEIGHT_DIR, exist_ok=True)
+    tester = Tester(cfg)
+    tester.test(weight_path)
 
 

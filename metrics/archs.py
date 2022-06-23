@@ -1,11 +1,7 @@
+import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
-from tensorflow.keras import regularizers
-
-import tensorflow as tf
 import numpy as np
-
-
 
 class ArcFace(Layer):
     def __init__(self, n_classes, s=30, m=0.50, easy_margin=False):
@@ -64,4 +60,3 @@ class ArcFace(Layer):
     def compute_output_shape(self, input_shape):
 
         return (input_shape[0][0], self.n_classes)
-
