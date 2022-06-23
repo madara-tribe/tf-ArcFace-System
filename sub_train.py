@@ -1,7 +1,5 @@
 import os, sys
 import numpy as np
-import matplotlib.pyplot as plt
-import cv2
 from datetime import datetime
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD, Adam
@@ -10,7 +8,6 @@ from DataLoder import DataLoad
 from cfg import Cfg
 from layers.resnet import create_model
 from metrics import archs
-
 
 class Trainer():
     def __init__(self, config):
@@ -25,7 +22,7 @@ class Trainer():
         model = create_model(HEIGHT, WIDTH, k=1, lr=1e-3)
         model.compile(optimizer=self.opt, 
                       loss = {"color_logits": "categorical_crossentropy",
-                              "shape_logits": "binary_crossentropy"},
+                              "shape_logits": "categorical_crossentropy"},
                       metrics=['accuracy'])
         if weights:
             print('weight loding ......')
@@ -71,4 +68,3 @@ if __name__=='__main__':
     os.makedirs(cfg.WEIGHT_DIR, exist_ok=True)
     arcface = Trainer(cfg)
     arcface.train(weight_path=weight_path)
-

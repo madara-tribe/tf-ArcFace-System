@@ -41,9 +41,9 @@ class DataLoad:
     def preprocess(self, p, clannel, valid=None):
         if clannel==3:
             x = cv2.imread(p)
+            x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
             x = cv2.resize(x, (self.width, self.height), interpolation=cv2.INTER_NEAREST)
             x = x.reshape(self.width, self.height, 3).astype(np.float32)
-            #x_img = cv2.cvtColor(x_img, cv2.COLOR_BGR2RGB)
         elif clannel==1:
             x = cv2.imread(p, 0)
             x = cv2.resize(x, (self.width, self.height), interpolation=cv2.INTER_NEAREST)
@@ -60,18 +60,17 @@ class DataLoad:
         x1_dir = self.cfg.x_img
         x_imgs = os.listdir(x1_dir)
         x_imgs.sort()
-    
-        x_label = np.load(self.cfg.x_label)
         for i, image_path in enumerate(tqdm(x_imgs)):
+            _, y, color, shape, _ = image_path.split("_")
             if valid:
                 img = self.preprocess(os.path.join(x1_dir, image_path), 3, valid=True)
                 X.append(img)
-                y_labels.append(x_label[i])
+                y_labels.append(int(y))
             else:
                 img = self.preprocess(os.path.join(x1_dir, image_path), 3, valid=None)
                 aug_img = np.flip(img)
                 X.append(img)
-                y_labels.append(x_label[i])
+                y_labels.append(int(y))
                 X_aug.append(aug_img)
         return X, y_labels, X_aug
 
@@ -80,10 +79,10 @@ class DataLoad:
         x_imgs = os.listdir(x1_dir)
         x_imgs.sort()
         
-        c_label, s_label = np.load(self.cfg.y1), np.load(self.cfg.y2)
         X, X_aug, color_label, shape_label = [], [], [], []
                                     
         for i, image_path in enumerate(tqdm(x_imgs)):
+            _, y, color, shape, _ = image_path.split("_")
             if valid:
                 img = self.preprocess(os.path.join(x1_dir, image_path), 3)
             else:
@@ -93,8 +92,21 @@ class DataLoad:
             # img
             X.append(img)
             # x_label, y1, y2
-            color_label.append(c_label[i])
-            shape_label.append(s_label[i])
+            color_label.append(int(color))
+            shape_label.append(int(shape))
         return X, X_aug, color_label, shape_label
+  
+    def load_hold_vector(self, path):
+        db_img = path
+        db_imgs = os.listdir(db_img)
+        db_imgs.sort()
 
-
+        X, Ys, clabel, slabel = [], [], [], []
+        for i, image_path in enumerate(tqdm(db_imgs)):
+            _, y, yc, ys, _ = image_path.split("_")
+            img = self.preprocess(os.path.join(path, image_path), 3)
+            X.append(img)
+            clabel.append(int(yc))
+            slabel.append(int(ys))
+            Ys.append(int(y))
+        return X, Ys, clabel, slabel

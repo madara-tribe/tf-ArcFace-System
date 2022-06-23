@@ -1,79 +1,88 @@
-import os, cv2
-import glob, time
-from pathlib import Path
+import os, sys
+import time
 import numpy as np
 from tensorflow.keras.models import Model
-from UTKload import UTKLoad, WEIGHT_DIR, WIDTH, HEIGHT, RACE_NUM_CLS
-from train import ArcFace
-from metrics.cosin_metric import cosine_similarity
+from DataLoder import DataLoad
+from cfg import Cfg 
+from layers.resnet import create_model
 
 
+def cosin_metric(x1, x2):
+    return np.dot(x1, x2) / (np.linalg.norm(x1) * np.linalg.norm(x2))
 
-def load_embeding_model(weight):
-    arcface_ = ArcFace(train_path=None, val_path=None, num_race=RACE_NUM_CLS)
-    m = arcface_.load_arcface_model(weight)
-    embeding_model = Model(m.get_layer(index=0).input, m.get_layer(index=-5).output)
-    embeding_model.summary()
-    return embeding_model
-    
-def load_querys(model, test_path):
-    load_ = UTKLoad(gamma=2.0)
-    X_test, y_test = load_.load_data(path=test_path, img_size=HEIGHT)
-    X_test = np.array(X_test, dtype='float32')/255
-    Xs = model.predict(X_test, verbose=1)
-    return Xs, y_test
-  
-def get_hold_vector(model, path):
-    image_dir = Path(path)
-    X_test, vector_label = [], []
-    for i, image_path in enumerate(image_dir.glob("*.jpg")):
-        image_name = image_path.name
-        y_label = image_name.split("_")[0]
-        img = cv2.imread(str(image_path))
-        vector_label.append(y_label)
-        X_test.append(img)
-    #load_ = UTKLoad(gamma=2.0)
-    #hold_vector, vector_label = load_.load_data(path=path, img_size=HEIGHT)
-    hold_vector = np.array(X_test, dtype='float32')/255
-    hold_vector = model.predict(hold_vector, verbose=1)
-    return hold_vector, vector_label
-    
-    
+def cosine_similarity(q, h):
+    if q.ndim == 1:
+        q = q.reshape(1, -1)
+    q_norm = np.linalg.norm(q, axis=1)
+    h_norm = np.linalg.norm(h, axis=1)
+    cosine_sim = np.dot(q, h.T)/(q_norm*h_norm+1e-10)
+    return cosine_sim
 
-def test_performance(model, query_path, vector_path):
-    X_querys, y_test = load_querys(model, query_path)
-    #X_querys = ss.fit_transform(X_querys)
-    X_querys /=np.linalg.norm(X_querys, axis=1, keepdims=True)
-    
-    hold_vector, vector_label = get_hold_vector(model, vector_path)
-    #hold_vector = ss.fit_transform(hold_vector)
-    hold_vector /=np.linalg.norm(hold_vector, axis=1, keepdims=True)
-    
-    acc = 0
-    start = time.time()
-    for i, (xq, y_label) in enumerate(zip(X_querys, y_test)):
-        if len(hold_vector) > RACE_NUM_CLS:
-            similarity = cosine_similarity(xq, hold_vector)
-            label_candidate = [vector_label[idx] for idx in np.argsort(similarity[0])[::-1][:20]]
-            frequent_idx = np.argmax(np.bincount(label_candidate))
-        else:
-            frequent_idx = np.argmax(cosine_similarity(xq, hold_vector))
         
-        if y_label==int(frequent_idx):
-            acc += 1
-        else:
-            acc += 0
-    print("TF Model Inference Latency is", time.time() - start, "[s]")
-    print('accuracy is {}'.format(acc/len(X_querys)))
+class Tester:
+    def __init__(self, cfg):
+        self.loader = DataLoad(cfg)
+
+    def load_embbed_model(self, weights):
+        model = create_model(256, 256, k=1, lr=1e-3)    
+        model.load_weights(weights)
+        #model.summary()
+        model.load_weights(weights)
+        
+        # embbed model
+        embed_inputs = model.get_layer(index=0).input
+        emmbed_shape = model.get_layer(index=-5).output
+        emmbed_color = model.get_layer(index=-6).output
+        embbed_model = Model(inputs=embed_inputs, outputs=[emmbed_shape, emmbed_color])
+        embbed_model.summary()
+        return embbed_model
+    
+    def load_querys(self):
+        path = "data/holdv"
+        X_data, _, cy_data, sy_data = self.loader.load_hold_vector(path)
+        X_data = np.array(X_data)
+        X_query, _, cy_query, sy_query = self.loader.meta_load(valid=True)
+        X_query, cy_query, sy_query = np.array(X_query), np.array(cy_query), np.array(sy_query)
+        X_query, cy_query, sy_query= X_query[600], cy_query[600], sy_query[600]
+        if len(X_query.shape)==3:
+            X_query = np.expand_dims(X_query, 0)
+        return (X_data, cy_data, sy_data), (X_query, cy_query, sy_query)
+        
         
 
+    def test(self, weight_path):
+        datas, qyerys = self.load_querys()
+        model = self.load_embbed_model(weight_path)
+        # prpare
+        X_shape, X_color = model.predict(datas[0], verbose=1)
+        
+        sacc = cacc = 0
+        start = time.time()
+        q_shape, q_color = model.predict(qyerys[0], verbose=1)
+        print(X_shape.shape, X_color.shape, q_shape.shape, q_color.shape)
+
+        shape_sims = [cosin_metric(q_shape, d) for d in X_shape]
+        color_sims = [cosin_metric(q_color, d) for d in X_color]
+        #np.save("npy/color_sim600", color_sims)
+        #np.save("npy/shape_sim600", shape_sims)
+        
+        print(max(datas[1]), max(datas[2]))
+        shape_idx = datas[2][np.argmax(shape_sims)]
+        color_idx = datas[1][np.argmax(color_sims)]
+        print(shape_idx, color_idx, qyerys[2], qyerys[1])
+        if shape_idx==qyerys[2]:
+            sacc += 1
+        if color_idx==qyerys[1]:
+            cacc += 1
+    
+        print("TF Model Inference Latency is", time.time() - start, "[s]")
+        print('color shape accuracy is {} {}'.format(cacc*100, sacc*100))
+      
 
 if __name__=='__main__':
-    weight = 'ep40arcface_model_260x260.hdf5'
-    query_path = '../../UTK/UTKFace'
-    vector_path = 'hold_vector'
-    embeding_model = load_embeding_model(weight)
-    test_performance(embeding_model, query_path, vector_path)
-
+    weight_path = "weights/arcface_model_30.hdf5"
+    cfg = Cfg
+    tester = Tester(cfg)
+    tester.test(weight_path)
 
 

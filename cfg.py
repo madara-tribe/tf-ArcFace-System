@@ -21,11 +21,6 @@ Cfg.embed_size = 512 # CNN Encoder outut size
 
 ## dataset
 Cfg.x_img = "data/x_img"
-Cfg.x2 = "data/ynp/y_color224_224_11.npy"
-Cfg.x3 = "data/ynp/y_sahpe224_224_2.npy"
-Cfg.x_label ="data/labels/label.npy"
-Cfg.y1 = "data/labels/y_color.npy"
-Cfg.y2 = "data/labels/y_shape.npy"
 Cfg.save_checkpoint = True
 Cfg.WEIGHT_DIR = "./weights"
 Cfg.TRAIN_TENSORBOARD_DIR = './logs'

@@ -24,16 +24,12 @@ def create_model(h, w, k=1, lr=1e-3):
     x = dw_conv(x1, nb_filter[i], k)
     x = res_block(x, k, nb_filter[i])
     x2 = res_block(x, k, nb_filter[i])
-    _, b02, b03, b04 = x2.shape
-    x2 = LambdaLayer(dim_k=b04/lambda_heads, r=3, heads=lambda_heads, dim_out=b04)(x2)
     i += 1
 
     #3
     x = dw_conv(x2, nb_filter[i], k)
     x = res_block(x, k, nb_filter[i])
     x3 = res_block(x, k, nb_filter[i])
-    _, b12, b13, b14 = x3.shape
-    x3 = LambdaLayer(dim_k=b14/lambda_heads, r=3, heads=lambda_heads, dim_out=b14)(x3)
     i += 1
 
     #4
@@ -42,16 +38,16 @@ def create_model(h, w, k=1, lr=1e-3):
     x4 = res_block(x, k, nb_filter[i])
 
     b, g, f, c = x4.shape
-    cx = LambdaLayer(dim_k=c/lambda_heads, r=3, heads=lambda_heads, dim_out=c)(x4)
-    cx = GlobalAveragePooling2D()(cx)
+    cxlambda = LambdaLayer(dim_k=c/lambda_heads, r=3, heads=lambda_heads, dim_out=c)(x4)
+    cx = GlobalAveragePooling2D()(cxlambda)
     cx = BatchNormalization()(cx)
     cx = Dense(11, activation='softmax', name='color_logits')(cx)
-    
-    sx = LambdaLayer(dim_k=c/lambda_heads, r=3, heads=lambda_heads, dim_out=c)(x4)
-    sx = GlobalAveragePooling2D()(sx)
+
+    sxlambda = LambdaLayer(dim_k=c/lambda_heads, r=3, heads=lambda_heads, dim_out=c)(x4)
+    sx = GlobalAveragePooling2D()(sxlambda)
     sx = BatchNormalization()(sx)
     sx = Dense(2, activation='softmax', name="shape_logits")(sx)
-                  
+
     model = Model(inputs=inputs, outputs=[cx, sx])
-    #--------------- center ------------
     return model
+
