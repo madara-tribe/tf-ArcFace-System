@@ -5,6 +5,8 @@ from datetime import datetime
 import numpy as np
 from meta_model.cfg import Cfg as csCfg
 from meta_model.train import MetaTrainer
+from meta_model.test import MetaTester
+
 from ArcFace_model.cfg import Cfg
 from ArcFace_model.train import Trainer
 from ArcFace_model.test import Tester
@@ -29,13 +31,15 @@ def main():
 
     cscfg = csCfg
     if args.meta_model_weight_path:
-        weight_path = args.meta_modeel_weight_path
+        weight_path = args.meta_model_weight_path
     else:
         weight_path = None
         os.makedirs(cscfg.WEIGHT_DIR, exist_ok=True)
 
     if args.meta_model_train:
         MetaTrainer(cscfg).train(weight_path=weight_path)
+    elif args.meta_model_eval:
+        MetaTester(cscfg).test(weight_path)
     
     cfg = Cfg
     if args.arcface_model_weight_path:
@@ -49,5 +53,7 @@ def main():
     elif args.arcface_model_eval:
         weight_path = args.arcface_model_weight_path
         Tester(cfg).test(weight_path)
+
+
 if __name__ == '__main__':
     main()

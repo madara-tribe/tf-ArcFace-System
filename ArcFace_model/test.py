@@ -1,4 +1,4 @@
-import os, sys
+import os
 import time
 import numpy as np
 from tensorflow.keras.models import Model
@@ -25,7 +25,7 @@ class Tester:
         return arcface_model
     
     def load_querys(self):
-        X_data, y_data, _ = self.loader.img_load(valid=True)
+        X_data, y_data, _ = self.loader.img_load(valid=False)
         #X_data, y_data, _, _ = self.loader.load_hold_vector(path)
         X_data = np.array(X_data)
         X_query, y_query, _ = self.loader.img_load(valid=True)
@@ -39,23 +39,16 @@ class Tester:
         X_data, y_data, X_query, y_query = self.load_querys()
         model = self.load_arcface_model(model, weight_path)
         # prpare
-        X_data = model.predict(X_data, verbose=1)
+        X_embbed_data = model.predict(X_data, verbose=1)
 
         acc = 0
         start = time.time()
         for Xq, yq in zip(X_query, y_query):
-            pred_Xq = model.predict(np.expand_dims(Xq, 0), verbose=0)
-            #print(X_data.shape, X_query.shape)
-            cos_sims = [cosin_metric(pred_Xq, d) for d in X_data]
-            #np.save("cossim600", cos_sims)
-            max_idx = np.argmax(cos_sims)
-            pred_idx = y_data[max_idx]
-            print(max_idx, pred_idx, yq)
-            if pred_idx==yq:
-                acc += 1
-            else:
-                acc += 0
+            embbed_query = model.predict(np.expand_dims(Xq, 0), verbose=0)
+            cos_sims = [cosin_metric(embbed_query, d) for d in X_embbed_data]
+            pred_idx = y_data[np.argmax(cos_sims)]
+            #print(max_idx, pred_idx, yq)
+            acc += 1 if pred_idx==yq else 0
         print("TF Model Inference Latency is", time.time() - start, "[s]")
-        print('accuracy is {}'.format(acc/len(X_query)*100))
-
+        print('accuracy is {} %'.format(acc/len(X_query)*100))
 
