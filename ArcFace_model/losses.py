@@ -1,6 +1,5 @@
 import tensorflow as tf
 
-
 def SoftmaxLoss():
     """softmax loss"""
     def softmax_loss(y_true, y_pred):

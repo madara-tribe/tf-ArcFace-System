@@ -1,3 +1,5 @@
+import sys
+sys.path.append("../")
 from pathlib import Path
 from tqdm import tqdm
 import cv2, os
@@ -27,7 +29,7 @@ class DataLoad:
 
         reduce_lr = ReduceLROnPlateau(monitor = 'val_loss', factor = 0.1, patience = 3, verbose = 1)
         
-        tb_callback = TensorBoard(log_dir='logs/',
+        tb_callback = TensorBoard(log_dir=self.cfg.TRAIN_TENSORBOARD_DIR,
                                       update_freq=self.cfg.train_batch * 5,
                                       profile_batch=0)
         calllbacks = [reduce_lr, cp_callback, tb_callback]

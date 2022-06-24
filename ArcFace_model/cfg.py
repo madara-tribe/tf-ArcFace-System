@@ -16,9 +16,9 @@ Cfg.weight_decay = 1e-4
 Cfg.momentum = 0.9
 Cfg.classes=122
 Cfg.embed_size = 512 # CNN Encoder outut size
-Cfg.x_img = "data/x_img"
+Cfg.x_img = "./data/x_img"
 Cfg.save_checkpoint = True
-Cfg.WEIGHT_DIR = "./weights"
-Cfg.TRAIN_TENSORBOARD_DIR = './logs'
-Cfg.ckpt_dir = os.path.join(_BASE_DIR, 'checkpoints')
+Cfg.WEIGHT_DIR = "ArcFace_model/weights"
+Cfg.TRAIN_TENSORBOARD_DIR = 'ArcFace_model/logs'
+Cfg.ckpt_dir = os.path.join(_BASE_DIR, 'ArcFace_model/checkpoints')
 
