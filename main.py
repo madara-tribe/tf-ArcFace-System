@@ -4,7 +4,7 @@ import argparse
 from datetime import datetime
 import numpy as np
 from meta_model.cfg import Cfg as csCfg
-from meta_model.train import Trainer as meta_trainer
+from meta_model.train import MetaTrainer
 from ArcFace_model.cfg import Cfg
 from ArcFace_model.train import Trainer
 from ArcFace_model.test import Tester
@@ -19,7 +19,7 @@ def main():
     parser.add_argument("--arcface_model_eval", action="store_true",
                             help="arcface_model eval")
 
-    parser.add_argument("--meta_modeel_weight_path", default=None,
+    parser.add_argument("--meta_model_weight_path", default=None,
                             help="meta_model weight path")
     parser.add_argument("--meta_model_train", action="store_true",
                             help="meta_model train")
@@ -28,14 +28,14 @@ def main():
     args = parser.parse_args()
 
     cscfg = csCfg
-    if args.meta_modeel_weight_path:
+    if args.meta_model_weight_path:
         weight_path = args.meta_modeel_weight_path
     else:
         weight_path = None
         os.makedirs(cscfg.WEIGHT_DIR, exist_ok=True)
 
     if args.meta_model_train:
-        meta_trainer(cscfg).train(weight_path=weight_path)
+        MetaTrainer(cscfg).train(weight_path=weight_path)
     
     cfg = Cfg
     if args.arcface_model_weight_path:
