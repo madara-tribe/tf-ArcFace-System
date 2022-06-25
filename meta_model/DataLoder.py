@@ -88,7 +88,7 @@ class DataLoad:
         X, Ys, clabel, slabel = [], [], [], []
         for i, image_path in enumerate(tqdm(db_imgs)):
             _, y, yc, ys, _ = image_path.split("_")
-            img = self.preprocess(os.path.join(path, image_path), 3)
+            img = self.preprocess(os.path.join(path, image_path), valid=False, test=False)
             X.append(img)
             clabel.append(int(yc))
             slabel.append(int(ys))
