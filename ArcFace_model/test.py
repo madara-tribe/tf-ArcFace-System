@@ -25,10 +25,10 @@ class Tester:
         return arcface_model
     
     def load_querys(self):
-        X_data, y_data, _ = self.loader.img_load(valid=False)
+        X_data, y_data, _ = self.loader.img_load(valid=False, test=False)
         #X_data, y_data, _, _ = self.loader.load_hold_vector(path)
         X_data = np.array(X_data)
-        X_query, y_query, _ = self.loader.img_load(valid=True)
+        X_query, y_query, _ = self.loader.img_load(valid=True, test=False)
         X_query, y_query = np.array(X_query[600:800]), y_query[600:800]
         return X_data, y_data, X_query, y_query
         
@@ -47,7 +47,7 @@ class Tester:
             embbed_query = model.predict(np.expand_dims(Xq, 0), verbose=0)
             cos_sims = [cosin_metric(embbed_query, d) for d in X_embbed_data]
             pred_idx = y_data[np.argmax(cos_sims)]
-            #print(max_idx, pred_idx, yq)
+            print(pred_idx, yq)
             acc += 1 if pred_idx==yq else 0
         print("TF Model Inference Latency is", time.time() - start, "[s]")
         print('accuracy is {} %'.format(acc/len(X_query)*100))

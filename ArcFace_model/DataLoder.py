@@ -38,24 +38,26 @@ class DataLoad:
 
         return calllbacks
 
-    def preprocess(self, p, clannel, valid=None):
-        if clannel==3:
+    def preprocess(self, p, valid=None, test=None):
+        if valid:
+            x = cv2.imread(p)
+            x = cv2.resize(x, (self.width, self.height), interpolation=cv2.INTER_NEAREST)
+            if test:
+                print("pass test")
+                x = np.flipud(x)
+            else:
+                print("pass valid")
+                #x = create_gamma_img(1.8, x)
+                x = np.flip(x)
+            x = x.reshape(self.width, self.height, 3).astype(np.float32)
+        else:
             x = cv2.imread(p)
             x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
             x = cv2.resize(x, (self.width, self.height), interpolation=cv2.INTER_NEAREST)
             x = x.reshape(self.width, self.height, 3).astype(np.float32)
-        elif clannel==1:
-            x = cv2.imread(p, 0)
-            x = cv2.resize(x, (self.width, self.height), interpolation=cv2.INTER_NEAREST)
-            x = x.reshape(self.width, self.height, 1).astype(np.float32)
-        elif valid:
-            x = cv2.imread(p)
-            x = cv2.resize(x, (self.width, self.height), interpolation=cv2.INTER_NEAREST)
-            x = create_gamma_img(1.8, x)
-            x = x.reshape(self.width, self.height, 3).astype(np.float32)
         return x/255
 
-    def img_load(self, valid=False):
+    def img_load(self, valid=False, test=False):
         X, y_labels, X_aug = [], [], []
         x1_dir = self.cfg.x_img
         x_imgs = os.listdir(x1_dir)
@@ -63,38 +65,17 @@ class DataLoad:
         for i, image_path in enumerate(tqdm(x_imgs)):
             _, y, color, shape, _ = image_path.split("_")
             if valid:
-                img = self.preprocess(os.path.join(x1_dir, image_path), 3, valid=True)
+                img = self.preprocess(os.path.join(x1_dir, image_path), valid=True, test=test)
                 X.append(img)
                 y_labels.append(int(y))
             else:
-                img = self.preprocess(os.path.join(x1_dir, image_path), 3, valid=None)
+                img = self.preprocess(os.path.join(x1_dir, image_path), valid=None, test=None)
                 aug_img = np.flip(img)
                 X.append(img)
                 y_labels.append(int(y))
                 X_aug.append(aug_img)
         return X, y_labels, X_aug
 
-    def meta_load(self, valid=False):
-        x1_dir = self.cfg.x_img
-        x_imgs = os.listdir(x1_dir)
-        x_imgs.sort()
-        
-        X, X_aug, color_label, shape_label = [], [], [], []
-                                    
-        for i, image_path in enumerate(tqdm(x_imgs)):
-            _, y, color, shape, _ = image_path.split("_")
-            if valid:
-                img = self.preprocess(os.path.join(x1_dir, image_path), 3)
-            else:
-                img = self.preprocess(os.path.join(x1_dir, image_path), 3)
-                aug_img = np.flip(img)
-                X_aug.append(aug_img)
-            # img
-            X.append(img)
-            # x_label, y1, y2
-            color_label.append(int(color))
-            shape_label.append(int(shape))
-        return X, X_aug, color_label, shape_label
   
     def load_hold_vector(self, path):
         db_img = path
@@ -110,3 +91,4 @@ class DataLoad:
             slabel.append(int(ys))
             Ys.append(int(y))
         return X, Ys, clabel, slabel
+

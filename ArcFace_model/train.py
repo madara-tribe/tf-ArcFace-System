@@ -46,8 +46,8 @@ class Trainer():
         
     def train(self, weight_path=None):
         print('train data loading.....')
-        X, y_labels, X_aug = self.loader.img_load(valid=False)
-        X_val, y_val, _ = self.loader.img_load(valid=True)
+        X, y_labels, X_aug = self.loader.img_load(valid=False, test=False)
+        X_val, y_val, _ = self.loader.img_load(valid=True, test=False)
         X_val, y_val = X_val[200:400], y_val[200:400]
         # input image (cls==128) 
         X_, X_val = np.array(X+X_aug), np.array(X_val)

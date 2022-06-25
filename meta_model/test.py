@@ -29,13 +29,13 @@ class MetaTester:
         model = self.load_model(weight_path)
 
         # data
-        X_data, _, color_data, shape_data = self.loader.meta_load(valid=None)
+        X_data, _, color_data, shape_data = self.loader.meta_load(valid=False, test=False)
         X_data = np.array(X_data)
         embed_shape, embed_color = model.predict(X_data, verbose=1)
         print(embed_shape.shape, embed_color.shape) # (1138, 256) (1138, 256)
 
         # query
-        X_query, _, color_query, shape_query = self.loader.meta_load(valid=True)
+        X_query, _, color_query, shape_query = self.loader.meta_load(valid=True, test=True)
         X_query = np.array(X_query)[400:600]
         color_query, shape_query = color_query[400:600], shape_query[400:600]
 
@@ -51,7 +51,7 @@ class MetaTester:
             shape_cossim = [cosin_metric(embed_query_shape, d) for d in embed_shape]
             pred_shape_idx = shape_data[np.argmax(shape_cossim)]
 
-            #print(pred_color_idx, yqc, pred_shape_idx, yqs)
+            print(pred_color_idx, yqc, pred_shape_idx, yqs)
             cacc += 1 if pred_color_idx==yqc else 0
             sacc += 1 if pred_shape_idx==yqs else 0
         print("TF Model Inference Latency is", time.time() - start, "[s]")
