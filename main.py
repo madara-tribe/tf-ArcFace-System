@@ -30,15 +30,15 @@ def main():
     args = parser.parse_args()
 
     cscfg = csCfg
-    if args.meta_model_weight_path:
-        weight_path = args.meta_model_weight_path
-    else:
-        weight_path = None
-        os.makedirs(cscfg.WEIGHT_DIR, exist_ok=True)
-
     if args.meta_model_train:
+        if args.meta_model_weight_path:
+            weight_path = args.meta_model_weight_path
+        else:
+            weight_path = None
+        os.makedirs(cscfg.WEIGHT_DIR, exist_ok=True)
         MetaTrainer(cscfg).train(weight_path=weight_path)
-    elif args.meta_model_eval:
+    elif args.meta_model_eval: 
+        weight_path = args.meta_model_weight_path
         MetaTester(cscfg).test(weight_path)
     
     cfg = Cfg

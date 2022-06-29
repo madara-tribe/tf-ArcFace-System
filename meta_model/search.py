@@ -35,13 +35,15 @@ class MetaTester:
         print(embed_shape.shape, embed_color.shape) # (1138, 256) (1138, 256)
 
         # query
-        X_query, _, color_query, shape_query = self.loader.meta_load(valid=True, test=True)
-        X_query = np.array(X_query)[400:600]
-        color_query, shape_query = color_query[400:600], shape_query[400:600]
+        X_query, y_labels, color_query, shape_query = self.loader.meta_load(valid=True, test=True)
+        X_query = np.array(X_query) #[400:600]
+        color_query, shape_query = color_query, shape_query
+        print(X_query.shape, np.array(y_labels).shape, np.array(color_query).shape, np.array(shape_query).shape)
         print('testing.....')
         sacc = cacc = totalacc = 0
+        easy, hard = [], []
         start = time.time()
-        for i, (Xq, yqc, yqs) in enumerate(zip(X_query, color_query, shape_query)):
+        for i, (Xq, Xyq, yqc, yqs) in enumerate(zip(X_query, y_labels, color_query, shape_query)):
             embed_query_shape, embed_query_color = model.predict(np.expand_dims(Xq, 0), verbose=0)
             # color
             color_cossim = [cosin_metric(embed_query_color, d) for d in embed_color]
@@ -51,10 +53,18 @@ class MetaTester:
             pred_shape_idx = shape_data[np.argmax(shape_cossim)]
 
             print(pred_color_idx, yqc, pred_shape_idx, yqs)
-            cacc += 1 if pred_color_idx==yqc else 0
-            sacc += 1 if pred_shape_idx==yqs else 0
-            totalacc += 1 if pred_color_idx==yqc and pred_shape_idx==yqs else 0
+            if pred_color_idx==yqc and pred_shape_idx==yqs:
+                easy.append(Xyq)
+                totalacc += 1
+            else:
+                hard.append(Xyq)
+                totalacc += 0 
+            #cacc += 1 if pred_color_idx==yqc else 0
+            #sacc += 1 if pred_shape_idx==yqs else 0
+            #totalacc += 1 if pred_color_idx==yqc and pred_shape_idx==yqs else 0
         print("TF Model Inference Latency is", time.time() - start, "[s]")
-        print("color accuracy", cacc/len(X_query)*100, "%")
-        print("shape accuracy", sacc/len(X_query)*100, "%")
+        #print("color accuracy", cacc/len(X_query)*100, "%")
+        #print("shape accuracy", sacc/len(X_query)*100, "%")
         print("color and shape pair accuracy", totalacc/len(X_query)*100, "%")
+        np.save("easy", easy)
+        np.save("hard", hard)

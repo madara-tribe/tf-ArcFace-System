@@ -4,8 +4,8 @@ from easydict import EasyDict
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 Cfg = EasyDict()
-Cfg.W = 256
-Cfg.H = 256
+Cfg.W = 260
+Cfg.H = 260
 Cfg.channels = 3
 Cfg.train_batch = 4
 Cfg.val_batch = 1

@@ -55,8 +55,8 @@ class ArcFace(Layer):
         else:
             phi = tf.where(cosine > th, phi, cosine - mm)
 
-        # 正解クラス:cos(θ+m) 他のクラス:cosθ
         output = (y * phi) + ((1.0 - y) * cosine)
+        print("when label is y=={} => output y phi cosine".format(int(y)), output, y, phi, cosine)
         output *= self.s
 
         return output
@@ -64,3 +64,4 @@ class ArcFace(Layer):
     def compute_output_shape(self, input_shape):
 
         return (input_shape[0][0], self.n_classes)
+

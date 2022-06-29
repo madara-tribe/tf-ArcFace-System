@@ -5,8 +5,6 @@ from tensorflow.keras import regularizers
 import tensorflow as tf
 import numpy as np
 
-
-
 class ArcFace(Layer):
     def __init__(self, n_classes, s=30, m=0.50, easy_margin=False):
         self.n_classes = n_classes
@@ -55,7 +53,6 @@ class ArcFace(Layer):
         else:
             phi = tf.where(cosine > th, phi, cosine - mm)
 
-        # 正解クラス:cos(θ+m) 他のクラス:cosθ
         output = (y * phi) + ((1.0 - y) * cosine)
         output *= self.s
 

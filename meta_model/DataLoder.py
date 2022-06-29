@@ -64,7 +64,7 @@ class DataLoad:
         x_imgs.sort()
         
         X, X_aug, color_label, shape_label = [], [], [], []
-                                    
+        ys = []                                    
         for i, image_path in enumerate(tqdm(x_imgs)):
             _, y, color, shape, _ = image_path.split("_")
             if valid:
@@ -76,6 +76,7 @@ class DataLoad:
             # img
             X.append(img)
             # x_label, y1, y2
+            ys.append(y)
             color_label.append(int(color))
             shape_label.append(int(shape))
         return X, X_aug, color_label, shape_label
