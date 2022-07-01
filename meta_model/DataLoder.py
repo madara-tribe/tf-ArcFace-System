@@ -79,7 +79,7 @@ class DataLoad:
             ys.append(y)
             color_label.append(int(color))
             shape_label.append(int(shape))
-        return X, X_aug, color_label, shape_label
+        return X, X_aug, ys, color_label, shape_label
   
     def load_hold_vector(self, path):
         db_img = path
@@ -95,3 +95,4 @@ class DataLoad:
             slabel.append(int(ys))
             Ys.append(int(y))
         return X, Ys, clabel, slabel
+

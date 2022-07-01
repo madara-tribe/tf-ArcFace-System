@@ -55,6 +55,7 @@ class ArcFace(Layer):
         else:
             phi = tf.where(cosine > th, phi, cosine - mm)
 
+        # 正解クラス:cos(θ+m) 他のクラス:cosθ
         output = (y * phi) + ((1.0 - y) * cosine)
         output *= self.s
 

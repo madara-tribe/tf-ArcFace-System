@@ -1,0 +1,18 @@
+ep11
+
+color accuracy 68.5 %
+shape accuracy 79.5 %
+
+
+logits_loss: 0.8325 - shape_logits_loss: 0.3996 - color_logits_accuracy: 0.7540 - shape_logits_accuracy: 0.8221 - val_loss: 2.4385 - val_color_logits_loss: 2.0106 - val_shape_logits_loss: 0.4279 - val_color_logits_accuracy: 0.2550 - val_shape_logits_accuracy: 0.8050
+
+Epoch 00021: CosineAnnealingScheduler setting learning rate to 0.001.
+Epoch 21/30
+569/569 [==============================] - ETA: 0s - loss: 1.2379 - color_logits_loss: 0.8366 - shape_logits_loss: 0.4012 - color_logits_accuracy: 0.7496 - shape_logits_accuracy: 0.8251   
+Epoch 00021: val_loss did not improve from 1.47247
+569/569 [==============================] - 1451s 3s/step - loss: 1.2379 - color_logits_loss: 0.8366 - shape_logits_loss: 0.4012 - color_logits_accuracy: 0.7496 - shape_logits_accuracy: 0.8251 - val_loss: 1.6996 - val_color_logits_loss: 1.3740 - val_shape_logits_loss: 0.3256 - val_color_logits_accuracy: 0.5650 - val_shape_logits_accuracy: 0.8800
+
+Epoch 00022: CosineAnnealingScheduler setting learning rate to 0.001.
+Epoch 22/30
+  3/569 [..............................] - ETA: 16:08 - loss: 1.0619 - color_logits_loss: 0.5310 - shape_logits_loss: 0.5309 - color_logits_accuracy: 0.8333 - shape_logits_accuracy: 0.7500
+[2] 0:make

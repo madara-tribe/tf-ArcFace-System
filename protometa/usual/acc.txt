@@ -1,0 +1,11 @@
+Total params: 8,400,480
+Trainable params: 8,389,088
+Non-trainable params: 11,392
+
+ep24
+
+TF Model Inference Latency is 62.76997637748718 [s]
+color accuracy 67.5 %
+shape accuracy 85.5 %
+
+

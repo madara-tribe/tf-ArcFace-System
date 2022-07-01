@@ -31,18 +31,17 @@ class MetaTrainer():
         return model
         
     def train(self, weight_path=None):
+        FROM, TO = 200, 400
         print('train data loading.....')
-        X, X_aug, color_label, shape_label = self.loader.meta_load(valid=False)
-        X_val, _, vc_label, vs_label = self.loader.meta_load(valid=True)
-        X_val, vc_label, vs_label = X_val[200:400], vc_label[200:400], vs_label[200:400]
+        X, X_aug, _, color_label, shape_label = self.loader.meta_load(valid=False)
+        X_val, _, _, vc_label, vs_label = self.loader.meta_load(valid=True)
+        X_val, vc_label, vs_label = X_val[FROM:TO], vc_label[FROM:TO], vs_label[FROM:TO]
         # input image (cls==128) 
         X, X_val = np.array(X+X_aug), np.array(X_val)
         
         # color meta (cls==11)
-        #color_label, vc_label = to_categorical(color_label+color_label, num_classes=11, dtype='uint8'), to_categorical(vc_label, num_classes=11, dtype='uint8')
         color_label, vc_label = np.array(color_label+color_label), np.array(vc_label)
         # shape meta (cls==2)
-        #shape_label, vs_label = to_categorical(shape_label+shape_label,num_classes=2, dtype='uint8'), to_categorical(vs_label, num_classes=2, dtype='uint8')
         shape_label, vs_label = np.array(shape_label+shape_label), np.array(vs_label)
         print(X.shape, X_val.shape, color_label.shape, shape_label.shape, X.min(), X.max(), vc_label.shape, vs_label.shape)
         print('model loading.....')
@@ -64,4 +63,3 @@ class MetaTrainer():
         print("\n")
         print("Elapsed time for Keras training (s): ", diff1.total_seconds())
         
-

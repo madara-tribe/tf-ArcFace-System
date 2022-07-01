@@ -1,63 +1,36 @@
 import sys
-sys.path.append("../")
+#sys.path.append("../")
 import os
 import numpy as np
-import cv2
 from datetime import datetime
 import tensorflow as tf
-from tensorflow.keras.optimizers import SGD, Adam
-from tensorflow.keras.layers import (Input, GlobalAveragePooling2D)
-from tensorflow.keras.models import Model
-from keras_efficientnet_v2.efficientnet_v2 import EfficientNetV2B2
-from metrics import archs
 from .DataLoder import DataLoad
-from .cfg import Cfg
-from .layers.tf_lambda_network import LambdaLayer
-from .losses import SoftmaxLoss
+from .load_model import load_arcface_model
+
 
 class Trainer():
     def __init__(self, config):
         self.cfg = config
         self.loader = DataLoad(config)
-        #self.opt = SGD(learning_rate=config.lr, decay=5e-4)
-        self.opt = Adam(lr=config.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
-        self.loss_fn = SoftmaxLoss()
-
-    def load_model(self, weights):
-        lambda_head = 4
-        y = Input(shape=(self.cfg.classes,))
-        model = EfficientNetV2B2(pretrained=None) #(include_top=True, weights='imagenet')
-        inputs = model.get_layer(index=0).input
-        x = model.get_layer(index=-4).output
-        b, h, g, c =x.shape
-        x = LambdaLayer(dim_k=c/lambda_head, r=3, heads=lambda_head, dim_out=c)(x)
-        x = GlobalAveragePooling2D()(x)
-        outputs = archs.ArcFace(self.cfg.classes, 30, 0.05)([x, y])
-        #outputs = Activation('softmax')(x)
-        model = Model(inputs=[inputs,y], outputs=outputs)
-        model.compile(optimizer=self.opt, 
-                      loss = self.loss_fn, #tf.keras.losses.SparseCategoricalCrossentropy(),
-                      metrics=['accuracy'])
-        if weights:
-            print('weight loding ......')
-            model.load_weights(os.path.join(WEIGHT_DIR, weights))
-        model.summary()
-        return model
         
-    def train(self, weight_path=None):
+    def train(self, weight_path=None, use_pretrain=None):
+        FROM, TO = 200, 400
         print('train data loading.....')
         X, y_labels, X_aug = self.loader.img_load(valid=False, test=False)
         X_val, y_val, _ = self.loader.img_load(valid=True, test=False)
-        X_val, y_val = X_val[200:400], y_val[200:400]
-        # input image (cls==128) 
+        X_val, y_val = X_val[FROM:TO], y_val[FROM:TO]
+        # input image 
         X_, X_val = np.array(X+X_aug), np.array(X_val)
         y_labels_, y_val = np.array(y_labels+y_labels), np.array(y_val)
-        #print(X_.shape, X_val.shape, y_labels_.shape, y_val.shape)
-        #print(X_.max(), X_.min()) 
+        print(X_.shape, X_val.shape, y_labels_.shape, y_val.shape)
+        print(X_.max(), X_.min()) 
         print('model loading.....')
-        calllbacks_ = self.loader.create_callbacks() 
-        model = self.load_model(weight_path)
-       
+        calllbacks_ = self.loader.create_callbacks()
+        if use_pretrain:
+           model = load_arcface_model(weights=None, use_pretrain=True)
+        else:
+           model = load_arcface_model(weights=weight_path, use_pretrain=False)
+        
         print('start training.....')
         startTime1 = datetime.now()
         hist1 = model.fit(x=[X_,y_labels_],
@@ -72,5 +45,5 @@ class Trainer():
         diff1 = endTime1 - startTime1
         print("\n")
         print("Elapsed time for Keras training (s): ", diff1.total_seconds())
-        
+
 

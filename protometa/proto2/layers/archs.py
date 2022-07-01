@@ -5,8 +5,6 @@ from tensorflow.keras import regularizers
 import tensorflow as tf
 import numpy as np
 
-
-
 class ArcFace(Layer):
     def __init__(self, n_classes, s=30, m=0.50, easy_margin=False):
         self.n_classes = n_classes

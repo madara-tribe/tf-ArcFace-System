@@ -46,8 +46,7 @@ def create_model(h, w, k=1, lr=1e-3):
     x = dw_conv(x3, nb_filter[i], k)
     x = mbconv_block(x, k, nb_filter[i])
     x4 = mbconv_block(x, k, nb_filter[i])
-    i +=1
-    
+
     #4
     x = dw_conv(x4, nb_filter[i], k)
     x = mbconv_block(x, k, nb_filter[i])

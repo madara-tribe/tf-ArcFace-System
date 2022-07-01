@@ -26,39 +26,33 @@ def create_model(h, w, k=1, lr=1e-3):
 
     #1
     x = dw_conv(x0, nb_filter[i], k)
-    x = mbconv_block(x, k, nb_filter[i])
-    x1 = mbconv_block(x, k, nb_filter[i])
+    x = res_block(x, k, nb_filter[i])
+    x1 = res_block(x, k, nb_filter[i])
     i += 1
 
     #2
     x = dw_conv(x1, nb_filter[i], k)
-    x = mbconv_block(x, k, nb_filter[i])
-    x2 = mbconv_block(x, k, nb_filter[i])
+    x = res_block(x, k, nb_filter[i])
+    x2 = res_block(x, k, nb_filter[i])
     i += 1
 
     #3
     x = dw_conv(x2, nb_filter[i], k)
-    x = mbconv_block(x, k, nb_filter[i])
-    x3 = mbconv_block(x, k, nb_filter[i])
+    x = res_block(x, k, nb_filter[i])
+    x3 = res_block(x, k, nb_filter[i])
     i += 1
 
     #4
     x = dw_conv(x3, nb_filter[i], k)
-    x = mbconv_block(x, k, nb_filter[i])
-    x4 = mbconv_block(x, k, nb_filter[i])
-    i +=1
+    x = res_block(x, k, nb_filter[i])
+    x4 = res_block(x, k, nb_filter[i])
     
-    #4
-    x = dw_conv(x4, nb_filter[i], k)
-    x = mbconv_block(x, k, nb_filter[i])
-    x5 = mbconv_block(x, k, nb_filter[i])
-    
-    x = Conv2D(1024, (3, 3), padding='same', use_bias=False)(x5)
+    x = Conv2D(1024, (3, 3), padding='same', use_bias=False)(x4)
     x = BatchNormalization()(x)
-    embbed = Activation("swish")(x)
+    x5 = Activation("swish")(x)
     
-    b, g, f, c = embbed.shape
-    cxlambda = sxlambda = LambdaLayer(dim_k=c/lambda_heads, r=3, heads=lambda_heads, dim_out=c)(embbed)
+    b, g, f, c = x5.shape
+    cxlambda = sxlambda = LambdaLayer(dim_k=c/lambda_heads, r=3, heads=lambda_heads, dim_out=c)(x5)
     # color
     cy = Input(shape=(color_cls,), name='color_label')
     cx = GlobalAveragePooling2D()(cxlambda)
@@ -75,8 +69,5 @@ def create_model(h, w, k=1, lr=1e-3):
 
     model = Model(inputs=[inputs, cy, sy], outputs=[cx, sx])
     return model
-
-
-
 
 

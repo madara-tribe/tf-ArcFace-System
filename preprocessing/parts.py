@@ -42,4 +42,9 @@ def load_json(p="train_meta.json"):
         #pprint.pprint(data)
     return data
 
+def stretching(image):
+    p2, p98 = np.percentile(image, (2, 98))
+    for j in range(3):
+        image[:, :, j] = exposure.rescale_intensity(image[:, :, j], in_range=(p2, p98))
+    return image 
 

@@ -1,6 +1,6 @@
 # /bin/sh
 mkdir -p copy/ArcFace_model copy/meta_model
-mkdir -p copy/meta_model/layers copy/meta_model/onnx 
+mkdir -p copy/meta_model/layers copy/meta_model/onnx copy/meta_model/results
 mkdir -p copy/ArcFace_model/onnx copy/ArcFace_model/layers
 mkdir -p copy/keras_efficientnet_v2
 mkdir -p copy/Docker copy/metrics copy/preprocessing
@@ -23,4 +23,4 @@ cp -r meta_model/layers/*.py copy/meta_model/layers/
 cp -r meta_model/onnx/*.py copy/meta_model/onnx/
 cp -r meta_model/weights copy/meta_model/
 cp -r meta_model/logs copy/meta_model/
-
+cp -r meta_model/results/* copy/meta_model/results/
