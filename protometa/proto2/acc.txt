@@ -1,4 +1,0 @@
-ep28
-TF Model Inference Latency is 45.61894869804382 [s]
-color accuracy 78.5 %
-shape accuracy 93.5 %

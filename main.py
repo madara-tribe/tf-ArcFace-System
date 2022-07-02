@@ -31,8 +31,6 @@ def main():
                             help="meta_model eval")
     parser.add_argument("--label_search", action="store_true",
                             help="easy and hard label seach for meta_model")
-    parser.add_argument("--use_pretrain", action="store_true",
-                            help="arcface model pretrain ")
     args = parser.parse_args()
 
     if args.meta:
@@ -52,18 +50,12 @@ def main():
             LabelingSearch(cscfg).test(weight_path)       
     elif args.arcface:
         cfg = Cfg
-        if args.arcface_model_weight_path:
-            weight_path = args.arcface_model_weight_path
-        else:
-            weight_path = None
         if args.train:
-            if args.use_pretrain:
-                os.makedirs(cfg.WEIGHT_DIR, exist_ok=True)
-                Trainer(cfg).train(weight_path=None, use_pretrain=True)
-            else:
-                os.makedirs(cfg.WEIGHT_DIR, exist_ok=True)
-                Trainer(cfg).train(weight_path=weight_path, use_pretrain=None)    
+            weight_path = args.arcface_model_weight_path
+            os.makedirs(cfg.WEIGHT_DIR, exist_ok=True)
+            Trainer(cfg).train(weight_path=weight_path)   
         elif args.eval:
+            weight_path = args.arcface_model_weight_path
             Tester(cfg).test(weight_path)
 
 

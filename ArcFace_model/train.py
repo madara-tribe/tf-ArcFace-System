@@ -13,24 +13,21 @@ class Trainer():
         self.cfg = config
         self.loader = DataLoad(config)
         
-    def train(self, weight_path=None, use_pretrain=None):
-        FROM, TO = 200, 400
+    def train(self, weight_path=None):
+        #FROM, TO = 200, 400
         print('train data loading.....')
-        X, y_labels, X_aug = self.loader.img_load(valid=False, test=False)
-        X_val, y_val, _ = self.loader.img_load(valid=True, test=False)
-        X_val, y_val = X_val[FROM:TO], y_val[FROM:TO]
+        X, ys = self.loader.img_load(valid=False, test=False)
+        X_val, y_val= self.loader.img_load(valid=True, test=False)
+  
         # input image 
-        X_, X_val = np.array(X+X_aug), np.array(X_val)
-        y_labels_, y_val = np.array(y_labels+y_labels), np.array(y_val)
+        X_, X_val = np.array(X), np.array(X_val)
+        y_labels_, y_val = np.array(ys), np.array(y_val)
         print(X_.shape, X_val.shape, y_labels_.shape, y_val.shape)
-        print(X_.max(), X_.min()) 
+        print(X_.max(), X_.min(), y_labels_.max(), y_val.min()) 
         print('model loading.....')
         calllbacks_ = self.loader.create_callbacks()
-        if use_pretrain:
-           model = load_arcface_model(weights=None, use_pretrain=True)
-        else:
-           model = load_arcface_model(weights=weight_path, use_pretrain=False)
-        
+        model = load_arcface_model(weights=weight_path)
+         
         print('start training.....')
         startTime1 = datetime.now()
         hist1 = model.fit(x=[X_,y_labels_],
@@ -45,5 +42,3 @@ class Trainer():
         diff1 = endTime1 - startTime1
         print("\n")
         print("Elapsed time for Keras training (s): ", diff1.total_seconds())
-
-

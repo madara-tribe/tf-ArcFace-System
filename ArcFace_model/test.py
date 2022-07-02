@@ -3,10 +3,8 @@ import time
 import numpy as np
 from tensorflow.keras.models import Model
 from metrics.cosin_metric import cosin_metric, cosine_similarity
-from .layers.tf_lambda_network import LambdaLayer
 from .DataLoder import DataLoad
-from .cfg import Cfg
-from .train import Trainer
+from .load_model import load_arcface_model as load_pretrain_model
 
 N = -3
 class Tester:
@@ -15,7 +13,6 @@ class Tester:
         self.cfg = config
 
     def load_arcface_model(self, model, weights):
-        
         model.load_weights(weights)
         # arcface model
         embed_inputs = model.get_layer(index=0).input
@@ -25,19 +22,17 @@ class Tester:
         return arcface_model
     
     def load_querys(self):
-        X_data, y_data, _ = self.loader.img_load(valid=False, test=False)
+        X_data, _, _, y_data = self.loader.img_load(valid=False, test=False)
         #X_data, y_data, _, _ = self.loader.load_hold_vector(path)
         X_data = np.array(X_data)
-        X_query, y_query, _ = self.loader.img_load(valid=True, test=False)
-        X_query, y_query = np.array(X_query[600:800]), y_query[600:800]
+        X_query, _, _, y_query = self.loader.img_load(valid=True, test=True)
+        X_query, y_query = np.array(X_query), y_query
         return X_data, y_data, X_query, y_query
         
-        
-
     def test(self, weight_path):
-        model = Trainer(self.cfg).load_model(weights=None)
+        pretrained_model = load_pretrain_model(weights=None)
+        model = self.load_arcface_model(pretrained_model, weight_path)
         X_data, y_data, X_query, y_query = self.load_querys()
-        model = self.load_arcface_model(model, weight_path)
         # prpare
         X_embbed_data = model.predict(X_data, verbose=1)
 
@@ -51,4 +46,5 @@ class Tester:
             acc += 1 if pred_idx==yq else 0
         print("TF Model Inference Latency is", time.time() - start, "[s]")
         print('accuracy is {} %'.format(acc/len(X_query)*100))
+
 

@@ -3,7 +3,10 @@ from tqdm import tqdm
 import cv2, os
 import numpy as np
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, ReduceLROnPlateau
-from metrics import scheduler, padding_resize
+from metrics import scheduler
+from .cfg import Cfg
+
+cfg = Cfg
 
 def create_gamma_img(gamma, img):
     gamma_cvt = np.zeros((256,1), dtype=np.uint8)
@@ -11,6 +14,11 @@ def create_gamma_img(gamma, img):
         gamma_cvt[i][0] = 255*(float(i)/255)**(1.0/gamma)
     return cv2.LUT(img, gamma_cvt)
 
+def load_labels(path):
+    hard_label = set(list(np.load(path)))
+    hard_label = [int(h) for h in hard_label]
+    hard_label.sort()
+    return hard_label
 
 class DataLoad:
     def __init__(self, config, cosine_annealing=True):
@@ -58,23 +66,33 @@ class DataLoad:
         return x/255
 
     def img_load(self, valid=False, test=False):
-        X, y_labels, X_aug = [], [], []
+        X, Xaug1, Xaug2, Y = [], [], [], []
+        hard_label = load_labels(path=cfg.HARD_LABEL_PATH)
+        print("hard_label", hard_label)
         x1_dir = self.cfg.x_img
         x_imgs = os.listdir(x1_dir)
         x_imgs.sort()
         for i, image_path in enumerate(tqdm(x_imgs)):
             _, y, color, shape, _ = image_path.split("_")
-            if valid:
-                img = self.preprocess(os.path.join(x1_dir, image_path), valid=True, test=test)
-                X.append(img)
-                y_labels.append(int(y))
-            else:
-                img = self.preprocess(os.path.join(x1_dir, image_path), valid=None, test=None)
-                aug_img = np.flip(img)
-                X.append(img)
-                y_labels.append(int(y))
-                X_aug.append(aug_img)
-        return X, y_labels, X_aug
+            if int(y) in hard_label:
+                if valid:
+                    img = self.preprocess(os.path.join(x1_dir, image_path), valid=True, test=test)
+                    hy = hard_label.index(int(y))
+                    X.append(img)
+                    Y.append(hy)
+                    print(hy, "val")
+                else:
+                    img = self.preprocess(os.path.join(x1_dir, image_path), valid=None, test=None)
+                    hy = hard_label.index(int(y))
+                    X.append(img)
+                    Xaug1.append(np.flip(img))
+                    Xaug2.append(np.flip(img, (0, 1)))
+                    Y.append(hy)
+                    print(hy, "tr")
+       
+        X_ = X if valid else X+Xaug1+Xaug2
+        Y_ = Y if valid else Y+Y+Y  
+        return X_, Y_
 
   
     def load_hold_vector(self, path):
@@ -91,4 +109,6 @@ class DataLoad:
             slabel.append(int(ys))
             Ys.append(int(y))
         return X, Ys, clabel, slabel
+
+
 

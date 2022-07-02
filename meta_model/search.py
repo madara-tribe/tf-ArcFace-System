@@ -43,7 +43,7 @@ class LabelingSearch:
         print('testing.....')
         sacc = cacc = pairacc = 0
         color_hard, shape_hard, pair_hard = [], [], []
-        os.makedirs("npy", exist_ok=True)
+        os.makedirs("data/labels", exist_ok=True)
 
         start = time.time()
         for i, (Xq, Xyq, yqc, yqs) in enumerate(zip(X_query, y_labels, color_query, shape_query)):
@@ -69,7 +69,7 @@ class LabelingSearch:
         print("color accuracy", cacc/len(X_query)*100, "%")
         print("shape accuracy", sacc/len(X_query)*100, "%")
         print("color and shape pair accuracy", pairacc/len(X_query)*100, "%")
-        np.save("npy/pair_hard", pair_hard)
-        np.save("npy/color_hard", color_hard)
-        np.save("npy/shape_hard", shape_hard)
+        np.save("data/labels/pair_hard", pair_hard)
+        np.save("data/labels/color_hard", color_hard)
+        np.save("data/labels/shape_hard", shape_hard)
 
