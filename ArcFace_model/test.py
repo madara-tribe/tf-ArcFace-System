@@ -12,8 +12,8 @@ class Tester:
         self.loader = DataLoad(config)
         self.cfg = config
 
-    def load_arcface_model(self, model, weights):
-        model.load_weights(weights)
+    def load_arcface_model(self, model):
+        #model.load_weights(weights)
         # arcface model
         embed_inputs = model.get_layer(index=0).input
         embed_out = model.get_layer(index=N).output
@@ -22,16 +22,16 @@ class Tester:
         return arcface_model
     
     def load_querys(self):
-        X_data, _, _, y_data = self.loader.img_load(valid=False, test=False)
+        X_data, y_data = self.loader.img_load(valid=False, test=False)
         #X_data, y_data, _, _ = self.loader.load_hold_vector(path)
         X_data = np.array(X_data)
-        X_query, _, _, y_query = self.loader.img_load(valid=True, test=True)
+        X_query, y_query = self.loader.img_load(valid=True, test=True)
         X_query, y_query = np.array(X_query), y_query
         return X_data, y_data, X_query, y_query
         
     def test(self, weight_path):
-        pretrained_model = load_pretrain_model(weights=None)
-        model = self.load_arcface_model(pretrained_model, weight_path)
+        pretrained_model = load_pretrain_model(weights=weight_path)
+        model = self.load_arcface_model(pretrained_model)
         X_data, y_data, X_query, y_query = self.load_querys()
         # prpare
         X_embbed_data = model.predict(X_data, verbose=1)

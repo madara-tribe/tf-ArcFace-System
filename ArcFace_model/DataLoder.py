@@ -93,22 +93,3 @@ class DataLoad:
         X_ = X if valid else X+Xaug1+Xaug2
         Y_ = Y if valid else Y+Y+Y  
         return X_, Y_
-
-  
-    def load_hold_vector(self, path):
-        db_img = path
-        db_imgs = os.listdir(db_img)
-        db_imgs.sort()
-
-        X, Ys, clabel, slabel = [], [], [], []
-        for i, image_path in enumerate(tqdm(db_imgs)):
-            _, y, yc, ys, _ = image_path.split("_")
-            img = self.preprocess(os.path.join(path, image_path), valid=None, test=None)
-            X.append(img)
-            clabel.append(int(yc))
-            slabel.append(int(ys))
-            Ys.append(int(y))
-        return X, Ys, clabel, slabel
-
-
-

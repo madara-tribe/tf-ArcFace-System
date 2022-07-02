@@ -17,7 +17,7 @@ def load_arcface_model(weights=None):
     embed_layer_idx = -4
     lambda_head = 4
     y = Input(shape=(cfg.classes,))
-    model = EfficientNetV2B2(pretrained=None) #'imagenet')
+    model = EfficientNetV2B2(pretrained='imagenet')
     inputs = model.get_layer(index=0).input
     x = model.get_layer(index=embed_layer_idx).output
     b, h, g, c =x.shape
