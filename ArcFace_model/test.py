@@ -13,7 +13,6 @@ class Tester:
         self.cfg = config
 
     def load_arcface_model(self, model):
-        #model.load_weights(weights)
         # arcface model
         embed_inputs = model.get_layer(index=0).input
         embed_out = model.get_layer(index=N).output

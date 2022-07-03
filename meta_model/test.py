@@ -24,49 +24,6 @@ class MetaTester:
         meta_model.summary()
         return meta_model
     
-    def create_holod_vector(self, weight_path):
-        # load model
-        model = self.load_model(weight_path)
-        # prepare embbed data
-        X_data, _, _, color_data, shape_data = self.loader.meta_load(valid=False, test=False)
-        X_data = np.array(X_data)
-        embed_shape, embed_color = model.predict(X_data, verbose=1)
-        print(embed_shape.shape, embed_color.shape) # (1138, 256) (1138, 256)
-        # prepare query
-        X_query, _, _, color_query, shape_query = self.loader.meta_load(valid=True, test=True)
-        X_query = np.array(X_query)
-
-        shape_Xh, color_Xh = [], []
-        shape_y, color_y = [], []
-        shape_th = 0.8
-        os.makedirs(save_path, exist_ok=True)
-        for i, (Xq, yqc, yqs) in enumerate(zip(X_query, color_query, shape_query)):
-            embed_query_shape, embed_query_color = model.predict(np.expand_dims(Xq, 0), verbose=0)
-            # color
-            color_cossim = [cosin_metric(embed_query_color, d) for d in embed_color]
-            cidx = np.argmax(color_cossim)
-            cprob = color_cossim[cidx]
-            pred_color_idx = color_data[cidx]
-            # shape
-            shape_cossim = [cosin_metric(embed_query_shape, d) for d in embed_shape]
-            sidx = np.argmax(shape_cossim)
-            sprob = shape_cossim[sidx]
-            pred_shape_idx = shape_data[sidx]
-
-            if pred_shape_idx==yqs and sprob >= shape_th:
-                shape_Xh.append(embed_shape[sidx])
-                shape_y.append(pred_shape_idx)
-            elif pred_color_idx==yqc:
-                color_Xh.append(embed_color[cidx])
-                color_y.append(pred_color_idx)
-
-        print(len(shape_Xh), len(shape_y), len(color_Xh), len(color_y))
-        np.save(save_path + "/shape_Xh", shape_Xh)
-        np.save(save_path + "/shape_y", shape_y)
-        np.save(save_path + "/color_Xh", color_Xh)
-        np.save(save_path + "/color_y", color_y)    
-
-
     def test(self, weight_path):
         # load model
         model = self.load_model(weight_path)

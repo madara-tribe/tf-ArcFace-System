@@ -31,8 +31,6 @@ def main():
                             help="meta_model eval")
     parser.add_argument("--label_search", action="store_true",
                             help="easy and hard label seach for meta_model")
-    parser.add_argument("--hold_vector", action="store_true",
-                            help="create hold vector for each model")
     args = parser.parse_args()
 
     if args.meta:
@@ -50,9 +48,6 @@ def main():
         elif args.label_search:
             weight_path = args.meta_model_weight_path
             LabelingSearch(cscfg).test(weight_path)       
-        elif args.hold_vector:
-            weight_path = args.meta_model_weight_path
-            MetaTester(cscfg).create_holod_vector(weight_path) 
     elif args.arcface:
         cfg = Cfg
         if args.train:
