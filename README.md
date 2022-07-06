@@ -34,7 +34,7 @@ with similar image search approch, cm matrix is as follos:
 - category cross entropy
 - image padding resize
 
-model customize is not so much. Instead of model customization, to improve accuracy approrch is mainly data preorocessing and data cleaning(ata-Centric approrch)
+model customize is not so much. Instead of model customization, to improve accuracy approrch is mainly data preorocessing and data cleaning(data-Centric approrch)
 
 <b>image padding resize(example)</b>
 
