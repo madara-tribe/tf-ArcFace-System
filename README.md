@@ -2,11 +2,8 @@
 ```
 - Python==3.7.0
 - tensorflow==2.3.0
-- Keras==2.3.1
-- onnx==1.9.0
-- onnxruntime==1.8.1
+- onnx==1.11.0
 - keras2onnx==1.9.0
-- cuda 10.1
 ```
 
 # Abstract
