@@ -14,14 +14,14 @@ cp -r preprocessing/*.py copy/preprocessing/
 # arcface model
 cp -r ArcFace_model/*.py ArcFace_model/*.sh ArcFace_model/*.txt copy/ArcFace_model/
 cp -r ArcFace_model/layers/*.py copy/ArcFace_model/layers/
-cp -r ArcFace_model/onnx/*.py copy/ArcFace_model/onnx/
+cp -r ArcFace_model/onnx/* copy/ArcFace_model/onnx/
 cp -r ArcFace_model/weights copy/ArcFace_model/
 cp -r ArcFace_model/logs copy/ArcFace_model/
 cp -r ArcFace_model/results/* copy/ArcFace_model/results/
 # meta model
 cp -r meta_model/*.py meta_model/*.sh meta_model/*.txt copy/meta_model/
 cp -r meta_model/layers/*.py copy/meta_model/layers/
-cp -r meta_model/onnx/*.py copy/meta_model/onnx/
+cp -r meta_model/onnx/* copy/meta_model/onnx/
 cp -r meta_model/weights copy/meta_model/
 cp -r meta_model/logs copy/meta_model/
 cp -r meta_model/results/* copy/meta_model/results/

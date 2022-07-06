@@ -1,12 +1,14 @@
 import sys
+sys.path.append("../")
+sys.path.append("../../")
 import tensorflow as tf
 from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
 from keras_efficientnet_v2.efficientnet_v2 import EfficientNetV2B2
-from .layers import archs, blocks
-from .layers.tf_lambda_network import LambdaLayer
-from .cfg import Cfg
+from layers import archs, blocks
+from layers.tf_lambda_network import LambdaLayer
+from cfg import Cfg
 
 #opt = SGD(learning_rate=config.lr, decay=5e-4)
 cfg = Cfg

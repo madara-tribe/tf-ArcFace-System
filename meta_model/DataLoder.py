@@ -5,7 +5,7 @@ from tqdm import tqdm
 import cv2, os
 import numpy as np
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, ReduceLROnPlateau
-from metrics import scheduler, padding_resize
+from metrics import scheduler
 
 def create_gamma_img(gamma, img):
     gamma_cvt = np.zeros((256,1), dtype=np.uint8)
@@ -80,4 +80,19 @@ class DataLoad:
             color_label.append(int(color))
             shape_label.append(int(shape))
         return X, X_aug, ys, color_label, shape_label
-  
+    
+    def hold_vector_load(self):
+        X, Y = [], []
+        color_label, shape_label = [], []
+        x1_dir = self.cfg.x_img
+        x_imgs = os.listdir(x1_dir)
+        x_imgs.sort()
+        for i, image_path in enumerate(tqdm(x_imgs)):
+            _, y, color, shape, _ = image_path.split("_")
+            if int(y) not in Y:
+                img = self.preprocess(os.path.join(x1_dir, image_path), valid=None, test=None)
+                X.append(img)
+                Y.append(int(y)) 
+                color_label.append(int(color))
+                shape_label.append(int(shape))
+        return X, Y, color_label, shape_label

@@ -6,19 +6,12 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, ReduceLROnP
 from metrics import scheduler
 from .cfg import Cfg
 
-cfg = Cfg
-
 def create_gamma_img(gamma, img):
     gamma_cvt = np.zeros((256,1), dtype=np.uint8)
     for i in range(256):
         gamma_cvt[i][0] = 255*(float(i)/255)**(1.0/gamma)
     return cv2.LUT(img, gamma_cvt)
 
-def load_labels(path):
-    hard_label = set(list(np.load(path)))
-    hard_label = [int(h) for h in hard_label]
-    hard_label.sort()
-    return hard_label
 
 class DataLoad:
     def __init__(self, config, cosine_annealing=True):
@@ -55,8 +48,8 @@ class DataLoad:
                 x = np.flipud(x)
             else:
                 print("pass valid")
-                #x = create_gamma_img(1.8, x)
-                x = np.flip(x)
+                x = create_gamma_img(1.8, x)
+                #x = np.flip(x)
             x = x.reshape(self.width, self.height, 3).astype(np.float32)
         else:
             x = cv2.imread(p)
@@ -67,29 +60,21 @@ class DataLoad:
 
     def img_load(self, valid=False, test=False):
         X, Xaug1, Xaug2, Y = [], [], [], []
-        hard_label = load_labels(path=cfg.HARD_LABEL_PATH)
-        print("hard_label", hard_label)
         x1_dir = self.cfg.x_img
         x_imgs = os.listdir(x1_dir)
         x_imgs.sort()
         for i, image_path in enumerate(tqdm(x_imgs)):
             _, y, color, shape, _ = image_path.split("_")
-            if int(y) in hard_label:
-                if valid:
-                    img = self.preprocess(os.path.join(x1_dir, image_path), valid=True, test=test)
-                    hy = hard_label.index(int(y))
-                    X.append(img)
-                    Y.append(hy)
-                    print(hy, "val")
-                else:
-                    img = self.preprocess(os.path.join(x1_dir, image_path), valid=None, test=None)
-                    hy = hard_label.index(int(y))
-                    X.append(img)
-                    Xaug1.append(np.flip(img))
-                    Xaug2.append(np.flip(img, (0, 1)))
-                    Y.append(hy)
-                    print(hy, "tr")
-       
+            if valid:
+                img = self.preprocess(os.path.join(x1_dir, image_path), valid=True, test=test)
+                X.append(img)
+                Y.append(int(y))
+            else:
+                img = self.preprocess(os.path.join(x1_dir, image_path), valid=None, test=None)
+                X.append(img)
+                Xaug1.append(np.flip(img))
+                Xaug2.append(np.flip(img, (0, 1)))
+                Y.append(int(y)) 
         X_ = X if valid else X+Xaug1+Xaug2
         Y_ = Y if valid else Y+Y+Y  
         return X_, Y_
