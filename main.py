@@ -26,7 +26,7 @@ def main():
     parser.add_argument("--train", action="store_true",
                             help="model train")
     parser.add_argument("--eval", action="store_true",
-                            help="meta_model eval")
+                            help="model test")
     parser.add_argument("--predict", action="store_true",
                             help="predict final label with arcface and meta model")
     args = parser.parse_args()
