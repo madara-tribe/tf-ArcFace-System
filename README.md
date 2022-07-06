@@ -8,7 +8,7 @@
 
 # Abstract
 
-with 122 labels and "shape, color" lanels (meta labels), use Arcface-model and meta-model for image classification task that is complicated and has small amount of data.
+with 122 labels and "shape, color" labels (meta labels), use Arcface-model and meta-model for image classification task that is complicated and has small amount of data.
 
 <img src="https://user-images.githubusercontent.com/48679574/177512038-5c6a147d-94e7-4c6e-abda-8724c79df2da.png" width="400px">
 
