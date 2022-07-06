@@ -24,10 +24,11 @@ with 122 labels and shape and color lanel (meta label), using Arcface model and 
 
 ## Arcface model
 
+<img src="https://user-images.githubusercontent.com/48679574/177523259-2c21ad54-10f5-4d21-ac05-fdc9cf3fecf5.png" width="300px"><img src="https://user-images.githubusercontent.com/48679574/177523273-a55558f3-c397-4508-a687-6ff8510d6b3f.png" width="300px">
+
 ## meta model
 
-
-
+<img src="https://user-images.githubusercontent.com/48679574/177523322-50cad032-20f5-4548-ac65-d68c3e109d3d.png" width="300px"><img src="https://user-images.githubusercontent.com/48679574/177523335-4c689fe3-46e2-4e74-826f-6b095ec148f4.png" width="300px">
 
 
 ## Data-Centric approrch
