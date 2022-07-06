@@ -8,7 +8,7 @@
 
 # Abstract
 
-with 122 labels and shape and color lanel (meta label), using Arcface model and meta-model for image classification task of complicated and small amount of data.
+with 122 labels and "shape, color" lanels (meta labels), use Arcface-model and meta-model for image classification task that is complicated and has small amount of data.
 
 <img src="https://user-images.githubusercontent.com/48679574/177512038-5c6a147d-94e7-4c6e-abda-8724c79df2da.png" width="400px">
 
@@ -36,7 +36,7 @@ with 122 labels and shape and color lanel (meta label), using Arcface model and 
 - category cross entropy
 - image padding resize
 
-model customize is not so much. Instead of model customization, to improve accuracy approrch is mainly data preorocessing and data cleaning(data-Centric approrch)
+model customize is not so much. Instead of model customization, improving accuracy approrch is mainly data preorocessing and data cleaning(data-Centric approrch)
 
 <b>image padding resize(example)</b>
 
