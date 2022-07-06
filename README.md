@@ -43,11 +43,16 @@ TF Model Inference Latency is 0.40515995025634766 [s]
 ```
 
 
-## Kmeans++ plot
-After training, prediction result plot by k-means++
+## Data-Centric approrch
+- optimizer Adam
+- category cross entropy
+- image padding resize
 
-<img src="https://user-images.githubusercontent.com/48679574/147999911-fe36644d-4519-4b2e-9386-32d7f37b27cc.png" width="500px">
+model customize is not so much. Instead of model customization, to improve accuracy approrch is mainly data preorocessing and data cleaning(ata-Centric approrch)
 
+<img src="https://user-images.githubusercontent.com/48679574/147999782-4e9e84cc-09f1-4a15-994b-1a2cb1f8e8b1.jpeg" width="500px">
+
+[A data-centric approach to understanding the pricing of financial options](https://www.researchgate.net/publication/225829199_A_data-centric_approach_to_understanding_the_pricing_of_financial_options)
 
 # ONNX Convert
 
@@ -69,11 +74,6 @@ ONNX Inference Latency is 192.74330139160156 [ms]
 
 
 # Note (useful tecs)
-- optimizer SGD
-- category cross entropy
-- image padding resize
-
-<img src="https://user-images.githubusercontent.com/48679574/147999782-4e9e84cc-09f1-4a15-994b-1a2cb1f8e8b1.jpeg" width="500px">
 
 
 # References
