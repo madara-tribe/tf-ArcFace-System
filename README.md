@@ -16,9 +16,9 @@ with 122 labels and shape and color lanel (meta label), using Arcface model and 
 
 | Model | Head | class | accuracy |
 | :---         |     :---:      |     :---:      |         ---: |
-| ArcFace model| Dense+sodtmax   | 122 | 76%|
-| meta model | ArcFace+softmax   | 11  | 82%|
-| ArcFace model + meta model | similar-image-search   | 122  | 96%|
+| ArcFace-model| Dense+softmax   | 122 | 76%|
+| meta-model | ArcFace+softmax   | 11  | 82%|
+| ArcFace-model + meta-model | similar-image-search   | 122  | 96%|
 
 
 ## Arcface model
