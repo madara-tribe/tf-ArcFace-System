@@ -37,6 +37,7 @@ with similar image search approch, cm matrix is as follos:
 model customize is not so much. Instead of model customization, to improve accuracy approrch is mainly data preorocessing and data cleaning(ata-Centric approrch)
 
 <b>image padding resize(example)</b>
+
 <img src="https://user-images.githubusercontent.com/48679574/147999782-4e9e84cc-09f1-4a15-994b-1a2cb1f8e8b1.jpeg" width="500px">
 
 
