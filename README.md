@@ -10,6 +10,7 @@
 
 with 122 labels and shape and color lanel (meta label), using Arcface model and meta-model for image classification task of complicated and small amount of data.
 
+<img src="https://user-images.githubusercontent.com/48679574/177512038-5c6a147d-94e7-4c6e-abda-8724c79df2da.png" width="600px">
 
 
 # Performance
