@@ -15,9 +15,7 @@ with 122 labels and shape and color lanel (meta label), using Arcface model and 
 
 
 
-# Result
-
-## performance
+# Performance
 
 with similar image search approch, cm matrix is as follos:
 
